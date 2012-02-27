@@ -1,0 +1,29 @@
+﻿Build started 13.02.2012 15:07:42.
+     1>Project "D:\work\recorder\recorder\recorder.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\recorder.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       CustomBuild:
+         Moc'ing recorder.h...
+         Uic'ing recorder.ui...
+         Rcc'ing recorder.qrc...
+     1>RCC : warning : No resources in 'D:\work\recorder\recorder\recorder.qrc'.
+         
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I.\GeneratedFiles /IC:\temp\qt4.8.064bit\include /I.\GeneratedFiles\Debug /IC:\temp\qt4.8.064bit\include\QtCore /IC:\temp\qt4.8.064bit\include\QtGui /I.\ /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_CORE_LIB /D QT_GUI_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt GeneratedFiles\Debug\moc_recorder.cpp main.cpp recorder.cpp
+         moc_recorder.cpp
+         main.cpp
+         recorder.cpp
+         Generating Code...
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I.\GeneratedFiles /IC:\temp\qt4.8.064bit\include /I.\GeneratedFiles\Debug /IC:\temp\qt4.8.064bit\include\QtCore /IC:\temp\qt4.8.064bit\include\QtGui /I.\ /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_CORE_LIB /D QT_GUI_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt GeneratedFiles\qrc_recorder.cpp
+         qrc_recorder.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\work\recorder\\recorder.exe" /NOLOGO /LIBPATH:C:\temp\qt4.8.064bit\lib qtmaind.lib QtCored4.lib QtGuid4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\recorder.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\work\recorder\recorder.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\work\recorder\recorder.lib" /MACHINE:X86 Debug\moc_recorder.obj
+         Debug\qrc_recorder.obj
+         Debug\main.obj
+         Debug\recorder.obj
+     1>QtGuid4.lib(QtGuid4.dll) : fatal error LNK1112: module machine type 'x64' conflicts with target machine type 'X86'
+     1>Done Building Project "D:\work\recorder\recorder\recorder.vcxproj" (build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:02.87
