@@ -1,15 +1,17 @@
-﻿Build started 27.02.2012 08:55:23.
+﻿Build started 28.02.2012 13:44:00.
      1>Project "D:\work\recorder\recorder\recorder.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
-         Creating "x64\Debug\recorder.unsuccessfulbuild" because "AlwaysCreate" was specified.
+         Touching "x64\Debug\recorder.unsuccessfulbuild".
        CustomBuild:
          All outputs are up-to-date.
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\CL.exe /c /I"D:\work\tiff-4.0.1\libtiff" /I"C:\Program Files\IDS\uEye\Develop\include" /I.\GeneratedFiles /IC:\temp\qt4.8.064bit\include /I.\GeneratedFiles\Debug /IC:\temp\qt4.8.064bit\include\QtCore /IC:\temp\qt4.8.064bit\include\QtGui /I.\ /Zi /nologo /W1 /WX- /Od /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_CORE_LIB /D QT_GUI_LIB /D QT_DLL /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc100.pdb" /Gd /TP /errorReport:prompt tiffconverter.cpp
-         tiffconverter.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\CL.exe /c /I"D:\work\tiff-4.0.1\libtiff" /I"C:\Program Files\IDS\uEye\Develop\include" /I.\GeneratedFiles /IC:\temp\qt4.8.064bit\include /I.\GeneratedFiles\Debug /IC:\temp\qt4.8.064bit\include\QtCore /IC:\temp\qt4.8.064bit\include\QtGui /I.\ /Zi /nologo /W1 /WX- /Od /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_CORE_LIB /D QT_GUI_LIB /D QT_DLL /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc100.pdb" /Gd /TP /errorReport:prompt recorder.cpp
+         recorder.cpp
          All outputs are up-to-date.
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"D:\work\recorder\\recorder.exe" /NOLOGO /LIBPATH:"D:\work\tiff-4.0.1\libtiff" /LIBPATH:"C:\Program Files\IDS\uEye\Develop\Lib" /LIBPATH:C:\temp\qt4.8.064bit\lib qtmaind.lib QtCored4.lib QtGuid4.lib ueye_api_64.lib libtiff.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"x64\Debug\recorder.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\work\recorder\recorder.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\work\recorder\recorder.lib" /MACHINE:X64 x64\Debug\moc_grabber.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"D:\work\recorder\\recorder.exe" /NOLOGO /LIBPATH:"D:\work\tiff-4.0.1\libtiff" /LIBPATH:"C:\Program Files\IDS\uEye\Develop\Lib" /LIBPATH:C:\temp\qt4.8.064bit\lib qtmaind.lib QtCored4.lib QtGuid4.lib ueye_api_64.lib libtiff.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"x64\Debug\recorder.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\work\recorder\recorder.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\work\recorder\recorder.lib" /MACHINE:X64 x64\Debug\converter.obj
+         x64\Debug\moc_converter.obj
+         x64\Debug\moc_grabber.obj
          x64\Debug\moc_imagelabel.obj
          x64\Debug\moc_qeye.obj
          x64\Debug\moc_recorder.obj
@@ -35,4 +37,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.64
+Time Elapsed 00:00:01.24

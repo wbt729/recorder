@@ -1,0 +1,6 @@
+*.opensdf
+*.pdb
+./ipch/
+*.obj
+./recorder/x64
+./recorder/Debug

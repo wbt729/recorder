@@ -6,8 +6,8 @@
 #include <QDebug>
 #include <qtextstream.h>
 //extern "C" {
-	#include "tiff.h"
-	#include "tiffio.h"
+#include "tiff.h"
+#include "tiffio.h"
 //}
 
 class TiffConverter : public QObject

@@ -20,7 +20,7 @@ Recorder::Recorder(QWidget *parent, Qt::WFlags flags) {
 	QTimer::singleShot(.1, this, SLOT(doThings()));
 	connect(startButton, SIGNAL(clicked()), cam, SLOT(startCapture()));
 	connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopCapture()));
-	connect(convertButton, SIGNAL(clicked()), conv, SLOT(convert()));
+	connect(convertButton, SIGNAL(clicked()), cam, SLOT(convertBlock()));
 
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
@@ -28,16 +28,6 @@ Recorder::Recorder(QWidget *parent, Qt::WFlags flags) {
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	imagesReceived = 0;
 	errors = 0;
-
-	uint32 a = 0x00010001;
-	//uint16 b = 0x0100;
-	uint16 b = a >> 1;
-	qDebug() << b;
-	b = b >> 1;
-	qDebug() << b;
-	//uint16 c = 0x0001 << 2;
-	uint16 c = 0x00000011 << 1;
-	qDebug() << c;
 }
 
 Recorder::~Recorder() {
@@ -49,7 +39,7 @@ void Recorder::doThings() {
 		cam->loadParameters("d:\\work\\ueye.ini");
 		//cam->setColorMode(IS_CM_RGB8_PACKED);
 		cam->setColorMode(IS_CM_RGB10V2_PACKED);
-		cam->createRingBuffer(40);
+		cam->createRingBuffer(400);
 		statusBar()->showMessage("Ready");
 	}
 	else statusBar()->showMessage("Init failed");

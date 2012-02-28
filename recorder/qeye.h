@@ -10,6 +10,7 @@
 #include "grabber.h"
 #include "storage.h"
 #include <qtimer.h>
+#include <converter.h>
 
 class QEye : public QObject {
 	Q_OBJECT
@@ -39,9 +40,12 @@ private:
 	INT* memoryID;
 	int bufferSize;
 	Grabber *grabber;
+	Converter *converter;
 	Storage *storage;
 	QThread *grabberThread;
 	QThread *storageThread;
+	QThread *converterThread;
+	bool isConverting;
 	bool running;
 	bool processingImage;
 	QImage *image;
@@ -51,19 +55,23 @@ private:
 	bool useFirstLinBuf;
 	int offset;
 	int linBufIndex;
+	int imagesReceived;
 private slots:
-	void frameDelay();
+	//void frameDelay();
+	void onConversionDone(QImage *);
 
 public slots:
 	void startCapture();
 	void stopCapture();
 	void onNewFrame();
 	void onError(int);
+	void convertBlock();
 signals:
 	void newImage(QImage *);
 	void starting();
 	void stopping();
 	void errors(int);
+	void newFrame(char *);
 };
 
 #endif // QEYE_H

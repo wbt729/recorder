@@ -9,7 +9,7 @@ ImageLabel::~ImageLabel() {
 
 void ImageLabel::setImage(QImage *img) {
 	pixmap.convertFromImage(*img);
-	pixmap = pixmap.scaledToHeight(800);
+	//pixmap = pixmap.scaledToHeight(800);
 	setPixmap(pixmap);
 }
 

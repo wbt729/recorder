@@ -10,21 +10,29 @@ QEye::QEye(QObject *parent) {
 	running = false;
 	grabber = new Grabber(this, &cam, &running);
 	storage = new Storage(this, &cam);
+	converter = new Converter(640, 512, 3, this);
 	grabberThread = new QThread;
 	storageThread = new QThread;
+	converterThread = new QThread;
 	grabber->moveToThread(grabberThread);
 	storage->moveToThread(storageThread);
+	converter->moveToThread(converterThread);
 	grabberThread->start();
 	storageThread->start();
-	//connect(grabber, SIGNAL(newFrame()), this, SLOT(onNewFrame()));
-	connect(grabber, SIGNAL(newFrame()), this, SLOT(frameDelay()));
+	converterThread->start();
+	connect(grabber, SIGNAL(newFrame()), this, SLOT(onNewFrame()));
+	//connect(grabber, SIGNAL(newFrame()), this, SLOT(frameDelay()));
 	connect(grabber, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	//connect(grabber, SIGNAL(newFrame()), storage, SLOT(saveLastImage()));
 	connect(this, SIGNAL(starting()), grabber, SLOT(start()));
-	filename = QString("d:\\work\\dump");
+	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToQImage(char *)));
+	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
+	filename = QString("dump");
 	QFile::remove(filename);
-	sizeLinBuf = 1;
+	sizeLinBuf = 500;
 	linBufIndex = 0;
+	isConverting = false;
+	imagesReceived = 0;
 }
 
 QEye::~QEye() {
@@ -106,25 +114,29 @@ int QEye::createRingBuffer(int size) {
 //}
 
 void QEye::startCapture() {
+	grabber->blockSignals(false);
 	running = true;
 	emit starting();
 	qDebug() << "start";
 }
 
-void QEye::frameDelay() {
-	QTimer::singleShot(.5, this, SLOT(onNewFrame()));
-}
+//void QEye::frameDelay() {
+//	QTimer::singleShot(.5, this, SLOT(onNewFrame()));
+//}
 
 void QEye::onNewFrame() {
-
-	
-	//char *sto = new char[getWidth()*getHeight()*bitsPerPixel/8];
-
+	imagesReceived++;
 	char *memAct, *memLast;
 	is_GetActSeqBuf(cam, NULL, &memAct, &memLast);
-	image = new QImage((uchar*) memLast, getWidth(), getHeight(), QImage::Format_RGB888);
-	//image = new QImage((uchar*) memLast, getWidth(), getHeight(), QImage::Format_Indexed8);
-	emit newImage(image);
+	if(!isConverting) {
+		isConverting = true;
+		emit(newFrame(memLast));
+	}
+	else
+		qDebug() << "still converting";
+
+
+	//emit newImage(image);
 
 	//offset = (useFirstLinBuf ? 0 : sizeLinBuf*getWidth()*getHeight()*bytesPerPixel);
 	offset = 0;
@@ -135,20 +147,21 @@ void QEye::onNewFrame() {
 
 	linBufIndex++;
 	if(linBufIndex >= sizeLinBuf) {
+		stopCapture();
 		QFile file(filename);
 		qDebug() << "open file" << file.open(QIODevice::WriteOnly | QIODevice::Append);
-		//qDebug() << "write data" << file.write(&linBuf[offset], getWidth()*getHeight()*bytesPerPixel*sizeLinBuf);
-		qDebug() << "write data" << file.write(memLast, getWidth()*getHeight()*bytesPerPixel);
+		qDebug() << "write data" << file.write(&linBuf[offset], getWidth()*getHeight()*bytesPerPixel*sizeLinBuf);
+		//qDebug() << "write data" << file.write(memLast, getWidth()*getHeight()*bytesPerPixel);
 		file.close();
 		linBufIndex = 0;
-		stopCapture();
 	}
-
 	return;
 }
 
 void QEye::stopCapture() {
+	qDebug() << "QEye stop capture";
 	running = false;
+	grabber->blockSignals(true);
 }
 
 bool QEye::isRunning() {
@@ -179,4 +192,13 @@ void QEye::onError(int num) {
 int QEye::setTrigger(bool external) {
 	if(external) return is_SetExternalTrigger(cam, IS_SET_TRIGGER_LO_HI);
 	else return is_SetExternalTrigger(cam, IS_SET_TRIGGER_SOFTWARE);
+}
+
+void QEye::onConversionDone(QImage *image) {
+	emit newImage(image);
+	isConverting = false;
+}
+
+void QEye::convertBlock() {
+	converter->blockToTIFFs();
 }
