@@ -1,3 +1,4 @@
+*dump*
 *.opensdf
 *.sdf
 *.suo
@@ -7,6 +8,7 @@ ipch/**/*
 /recorder/x64/**/*
 /recorder/Debug/**/*
 /recorder/GeneratedFiles/**/*
+/recorder/GeneratedFiles
 *.exe
 *.ilk
 *.pdb

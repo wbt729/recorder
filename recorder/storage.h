@@ -4,19 +4,20 @@
 #include <QObject>
 #include <qdebug.h>
 #include "uEye.h"
+#include <QTime>
+#include <qfile.h>
 
 class Storage : public QObject {
 	Q_OBJECT
 
 public:
-	Storage(QObject *parent, HIDS*);
+	Storage(QObject *parent);
 	~Storage();
 
 private:
-	HIDS *cam;
-	int index;
+	QFile file;
 public slots:
-	void saveLastImage();
+	void saveLinBuf(char *, int);
 };
 
 #endif // STORAGE_H

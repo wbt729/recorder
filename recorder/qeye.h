@@ -32,6 +32,8 @@ public:
 
 private:
 	HIDS cam;
+	INT bitsPerSample;
+	INT channels;
 	INT bitsPerPixel;
 	INT bytesPerPixel;
 	IS_RECT AOIRect;
@@ -72,6 +74,7 @@ signals:
 	void stopping();
 	void errors(int);
 	void newFrame(char *);
+	void linBufFull(char *, int);
 };
 
 #endif // QEYE_H

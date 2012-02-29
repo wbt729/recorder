@@ -9,8 +9,8 @@ QEye::QEye(QObject *parent) {
 	bufferSize = 0;
 	running = false;
 	grabber = new Grabber(this, &cam, &running);
-	storage = new Storage(this, &cam);
-	converter = new Converter(640, 512, 3, this);
+	storage = new Storage(this);
+	converter = new Converter(this);
 	grabberThread = new QThread;
 	storageThread = new QThread;
 	converterThread = new QThread;
@@ -27,12 +27,18 @@ QEye::QEye(QObject *parent) {
 	connect(this, SIGNAL(starting()), grabber, SLOT(start()));
 	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToQImage(char *)));
 	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
-	filename = QString("dump");
+	connect(this, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
+	filename = QString("d:\\work\\dump");
 	QFile::remove(filename);
-	sizeLinBuf = 500;
+	sizeLinBuf = 100;
 	linBufIndex = 0;
 	isConverting = false;
 	imagesReceived = 0;
+	useFirstLinBuf = true;
+	bitsPerSample = 0;
+	channels = 0;
+	bytesPerPixel = 0;
+
 }
 
 QEye::~QEye() {
@@ -51,8 +57,11 @@ int QEye::setColorMode(INT mode) {
 	switch(mode) {
 		case IS_CM_RGB10V2_PACKED:
 			bitsPerPixel = 32;
+			bytesPerPixel = 4;
+			channels = 3;
+			bitsPerSample = 10;
 			break;
-		case IS_CM_BGRA8_PACKED:
+		case IS_CM_BGRA8_PACKED:	//TODO set other parameters
 			bitsPerPixel = 32;
 			break;
 		case IS_CM_RGB8_PACKED:
@@ -97,63 +106,42 @@ int QEye::createRingBuffer(int size) {
 	return 0;
 }
 
-//int QEye::createBuffer(int size) {
-//	bufferSize = size;
-//	//imageMemory = new char*[bufferSize];
-//	memoryID = new INT[bufferSize];
-//
-//	for(int i=0; i < bufferSize; i++) {
-//		HANDLE hMem = GlobalAlloc(0, getWidth()*getHeight()*bitsPerPixel);
-//		//char* pcMem = (char*)GlobalLock(hMem);
-//		mymem = (char*) hMem;
-//		qDebug() << "set allocated mem" << is_SetAllocatedImageMem(cam, getWidth(), getHeight(), bitsPerPixel, mymem, &memoryID[i]);
-//		qDebug() << "add to sequence" << is_AddToSequence(cam, mymem, memoryID[i]);
-//	}
-//	is_InitImageQueue(cam, 0);
-//	return 0;
-//}
-
 void QEye::startCapture() {
+	converter->setResolution(getWidth(), getHeight(), channels, bitsPerSample, bytesPerPixel);
 	grabber->blockSignals(false);
 	running = true;
 	emit starting();
 	qDebug() << "start";
 }
 
-//void QEye::frameDelay() {
-//	QTimer::singleShot(.5, this, SLOT(onNewFrame()));
-//}
-
 void QEye::onNewFrame() {
 	imagesReceived++;
 	char *memAct, *memLast;
-	is_GetActSeqBuf(cam, NULL, &memAct, &memLast);
-	if(!isConverting) {
-		isConverting = true;
-		emit(newFrame(memLast));
-	}
-	else
-		qDebug() << "still converting";
-
-
+	INT id = 0;
+	is_GetActSeqBuf(cam, &id, &memAct, &memLast);
+	qDebug() << "buffer id" << id;
 	//emit newImage(image);
 
-	//offset = (useFirstLinBuf ? 0 : sizeLinBuf*getWidth()*getHeight()*bytesPerPixel);
-	offset = 0;
+	offset = (useFirstLinBuf ? 0 : sizeLinBuf*getWidth()*getHeight()*bytesPerPixel);
+	//offset = 0;
 
 	qDebug() << "copy mem" << is_CopyImageMem(cam, memLast, NULL, &linBuf[offset+linBufIndex*getWidth()*getHeight()*bytesPerPixel]);
 	//qDebug() << "copy mem" << is_CopyImageMem(cam, memLast, memoryID[0], &linBuf[offset+linBufIndex*getWidth()*getHeight()*bytesPerPixel]);
 	qDebug() << "unlock mem" << is_UnlockSeqBuf(cam, NULL, memLast);
 
+	if(!isConverting) {
+		isConverting = true;
+		//emit(newFrame(memLast));
+		emit(newFrame(&linBuf[offset+linBufIndex*getWidth()*getHeight()*bytesPerPixel]));
+	}
+	else
+		qDebug() << "still converting";
+
 	linBufIndex++;
 	if(linBufIndex >= sizeLinBuf) {
-		stopCapture();
-		QFile file(filename);
-		qDebug() << "open file" << file.open(QIODevice::WriteOnly | QIODevice::Append);
-		qDebug() << "write data" << file.write(&linBuf[offset], getWidth()*getHeight()*bytesPerPixel*sizeLinBuf);
-		//qDebug() << "write data" << file.write(memLast, getWidth()*getHeight()*bytesPerPixel);
-		file.close();
+		emit linBufFull(&linBuf[offset], getWidth()*getHeight()*bytesPerPixel*sizeLinBuf);
 		linBufIndex = 0;
+		useFirstLinBuf = !useFirstLinBuf;
 	}
 	return;
 }
@@ -161,7 +149,7 @@ void QEye::onNewFrame() {
 void QEye::stopCapture() {
 	qDebug() << "QEye stop capture";
 	running = false;
-	grabber->blockSignals(true);
+
 }
 
 bool QEye::isRunning() {
@@ -169,8 +157,19 @@ bool QEye::isRunning() {
 }
 
 int QEye::exit() {
+	qDebug() << "QEye: exit";
+	grabber->blockSignals(true);
+	converter->blockSignals(true);
+	storage->blockSignals(true);
 	disconnect(this, SIGNAL(onNewFrame()));
 	stopCapture();
+	grabberThread->quit();
+	storageThread->quit();
+	converterThread->quit();
+	qDebug() << "QEye: wait for Threads to finish";
+	qDebug() << "QEye: grabber thread" << grabberThread->wait();
+	qDebug() << "QEye: storage thread" << storageThread->wait();
+	qDebug() << "QEye: converter thread" << converterThread->wait();
 	return is_ExitCamera(cam);
 }
 

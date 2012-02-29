@@ -1,12 +1,12 @@
 #include "converter.h"
 
-Converter::Converter(int w, int h, int c, QObject *parent)
+Converter::Converter(QObject *parent)
     : QObject(parent) {
-	width = w;
-	height = h;
-	channels = c;
-	bitsPerSample = 10;
-	bytesPerPixel = 4;
+	width = 0;
+	height = 0;
+	channels = 0;
+	bitsPerSample = 0;
+	bytesPerPixel = 0;
 }
 
 
@@ -32,14 +32,6 @@ void Converter::charToQImage(char *rawDat) {
 	}
 	emit newImage(&image);
 }
-
-void Converter::setResolution(int w, int h, int c) {
-	width = w;
-	height = h;
-	channels = c;
-}
-
-
 
 //returns a vector of unsigned shorts that contains the samples with 10 bit precision
 QVector<unsigned short> Converter::readSamples(unsigned char *rawData) {
@@ -81,13 +73,27 @@ QVector<unsigned short> Converter::readSamples(unsigned char *rawData) {
 	return samples;
 }
 
+void Converter::setResolution(int w, int h, int c, int bps, int bpp) {
+	width = w;
+	height = h;
+	channels = c;
+	bitsPerSample = bps;
+	bytesPerPixel = bpp;
+}
+
+
 void Converter::blockToTIFFs() {
-	qDebug() << "converting binary dump to TIFFs";
-	QFile file("dump");
+
+
+
+	qDebug() << "Converter: converting binary dump to TIFFs";
+	QFile file("d:\\work\\dump");
 	if(!file.open(QIODevice::ReadOnly)) {
-		qDebug() << "cannot open file";
+		qDebug() << "Converter: cannot open file";
 		return;
 	}
+
+	qDebug() << "Converter: there are" << file.size()/(width*height*bytesPerPixel) << "images to be decoded";
 
 	unsigned char *rawData = new unsigned char[width*height*bytesPerPixel];
 	QDataStream in(&file);
@@ -99,7 +105,7 @@ void Converter::blockToTIFFs() {
 		in.readRawData((char*) rawData, width*height*bytesPerPixel);
 		QVector<unsigned short> samples = readSamples(rawData);
 
-		QString filenameTIFF = QString(tr("d:\\work\\img\\%1.tiff").arg(l));
+		QString filenameTIFF = QString(tr("d:\\work\\img\\%1.tiff").arg(l+1));
 		TIFF *out=TIFFOpen(filenameTIFF.toLatin1(),"w");
 
 		TIFFSetField(out, TIFFTAG_IMAGEWIDTH, width);
@@ -173,5 +179,6 @@ void Converter::blockToTIFFs() {
 		}
 		TIFFClose(out);
 	}
+	qDebug() << "Converter: done converting";
 	file.close();
 }

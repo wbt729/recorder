@@ -25,9 +25,9 @@ private:
 	QVector<unsigned short> readSamples(unsigned char *);
 
 public:
-    Converter(int, int, int, QObject *parent = 0);
+    Converter(QObject *parent = 0);
     ~Converter();
-	void setResolution(int, int, int);
+	void setResolution(int, int, int, int, int);
 
 public slots:
 	void charToQImage(char *);
