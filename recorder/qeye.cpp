@@ -1,6 +1,8 @@
 #include "qeye.h"
 
 QEye::QEye(QObject *parent) {
+	logFile.setFileName("log.txt");
+	logFile.open(QIODevice::Text | QIODevice::WriteOnly);
 	cam = NULL;
 	bitsPerPixel = 0;
 	colorMode = 0;
@@ -138,26 +140,23 @@ void QEye::onNewFrame() {
 	INT id = 0;
 	is_GetActSeqBuf(cam, &id, &memAct, &memLast);
 	qDebug() << "buffer id" << id;
-	//emit newImage(image);
 
+	//calculate offset to first or second linear buffer
 	offset = (useFirstLinBuf ? 0 : sizeLinBuf*width*height*bytesPerPixel);
-	//offset = 0;
 
-	qDebug() << "copy mem" << is_CopyImageMem(cam, memLast, NULL, &linBuf[offset+linBufIndex*getWidth()*getHeight()*bytesPerPixel]);
-	//qDebug() << "copy mem" << is_CopyImageMem(cam, memLast, memoryID[0], &linBuf[offset+linBufIndex*getWidth()*getHeight()*bytesPerPixel]);
+	qDebug() << "copy mem" << is_CopyImageMem(cam, memLast, NULL, &linBuf[offset+linBufIndex*width*height*bytesPerPixel]);
 	qDebug() << "unlock mem" << is_UnlockSeqBuf(cam, NULL, memLast);
 
 	if(!isConverting) {
 		isConverting = true;
-		//emit(newFrame(memLast));
-		emit(newFrame(&linBuf[offset+linBufIndex*getWidth()*getHeight()*bytesPerPixel]));
+		emit(newFrame(&linBuf[offset+linBufIndex*width*height*bytesPerPixel]));
 	}
 	else
 		qDebug() << "still converting";
 
 	linBufIndex++;
 	if(linBufIndex >= sizeLinBuf) {
-		emit linBufFull(&linBuf[offset], getWidth()*getHeight()*bytesPerPixel*sizeLinBuf);
+		emit linBufFull(&linBuf[offset], width*height*bytesPerPixel*sizeLinBuf);
 		linBufIndex = 0;
 		useFirstLinBuf = !useFirstLinBuf;
 	}

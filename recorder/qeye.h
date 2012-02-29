@@ -31,6 +31,7 @@ public:
 	int setTrigger(bool);
 
 private:
+	QFile logFile;
 	HIDS cam;
 	INT bitsPerSample;
 	INT channels;
