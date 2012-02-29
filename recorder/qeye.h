@@ -23,7 +23,7 @@ public:
 	int setColorMode(int);
 	int getWidth();
 	int getHeight();
-	int createRingBuffer(int);
+	int createBuffers(int, int);
 	bool isRunning();
 	int exit();
 	double getExposure();
@@ -58,6 +58,8 @@ private:
 	int offset;
 	int linBufIndex;
 	int imagesReceived;
+	int width;
+	int height;
 private slots:
 	//void frameDelay();
 	void onConversionDone(QImage *);

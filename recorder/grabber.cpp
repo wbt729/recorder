@@ -13,6 +13,7 @@ void Grabber::start() {
 	//is_SetSensorTestImage(*cam, IS_TEST_IMAGE_BLACK, NULL;)
 	//is_SetSensorTestImage(*cam, IS_TEST_IMAGE_WHITE, NULL);
 	//is_SetSensorTestImage(*cam, IS_TEST_IMAGE_WEDGE_GRAY_SENSOR, NULL);
+	//is_SetErrorReport(*cam, IS_ENABLE_ERR_REP);
 	//
 	HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	qDebug() << "initEvent" << is_InitEvent(*cam, hEvent, IS_SET_EVENT_FRAME);
@@ -25,6 +26,12 @@ void Grabber::start() {
 	is_InitEvent(*cam, hEvent, IS_SET_EVENT_FRAME);
 	qDebug() << "start capturing" << is_CaptureVideo(*cam, IS_DONT_WAIT);
 	do {
+		is_CaptureStatus(*cam, IS_CAPTURE_STATUS_INFO_CMD_GET, (void*) &captureStatusInfo, sizeof(captureStatusInfo));
+		if(captureStatusInfo.dwCapStatusCnt_Total) emit errors(captureStatusInfo.dwCapStatusCnt_Total);
+		if(captureStatusInfo.dwCapStatusCnt_Total > 2) {
+			qDebug() << "panic";
+		}
+		is_CaptureStatus(*cam, IS_CAPTURE_STATUS_INFO_CMD_RESET, (void*) &captureStatusInfo, sizeof(captureStatusInfo));
 		dRet = WaitForSingleObject(hEvent, 2000);
 		if(dRet == WAIT_OBJECT_0) {
 			qDebug() << "wait object ret" << dRet;

@@ -39,7 +39,7 @@ void Recorder::doThings() {
 		cam->loadParameters("d:\\work\\ueye.ini");
 		//cam->setColorMode(IS_CM_RGB8_PACKED);
 		cam->setColorMode(IS_CM_RGB10V2_PACKED);
-		cam->createRingBuffer(400);
+		cam->createBuffers(400, 100);
 		statusBar()->showMessage("Ready");
 	}
 	else statusBar()->showMessage("Init failed");

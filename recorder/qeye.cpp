@@ -30,7 +30,7 @@ QEye::QEye(QObject *parent) {
 	connect(this, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
 	filename = QString("d:\\work\\dump");
 	QFile::remove(filename);
-	sizeLinBuf = 100;
+	sizeLinBuf = 0;
 	linBufIndex = 0;
 	isConverting = false;
 	imagesReceived = 0;
@@ -38,7 +38,8 @@ QEye::QEye(QObject *parent) {
 	bitsPerSample = 0;
 	channels = 0;
 	bytesPerPixel = 0;
-
+	width = 0;
+	height = 0;
 }
 
 QEye::~QEye() {
@@ -46,11 +47,21 @@ QEye::~QEye() {
 
 int QEye::init(int id) {
 	if(id != 0) cam |= id;
-	return is_InitCamera(&cam, NULL);
+	int ret = is_InitCamera(&cam, NULL);
+	if(ret) {
+		getWidth();
+		getHeight();
+	}
+	return ret;
 }
 
 int	QEye::loadParameters(QString str) {
-	return is_LoadParameters(cam, str.toLatin1());
+	int ret = is_LoadParameters(cam, str.toLatin1());
+	if(ret) {
+		getWidth();
+		getHeight();
+	}
+	return ret;
 }
 
 int QEye::setColorMode(INT mode) {
@@ -82,21 +93,28 @@ int QEye::setColorMode(INT mode) {
 }
 
 int QEye::getHeight() {
-	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) return AOIRect.s32Height;
+	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
+		height = AOIRect.s32Height;
+		return height;
+	}
 	else return -1;
 }
 
 int QEye::getWidth() {
-	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) return AOIRect.s32Width;
+	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
+		width = AOIRect.s32Width;
+		return width;
+	}
 	else return -1;
 }
 
-int QEye::createRingBuffer(int size) {
-	bufferSize = size;
+int QEye::createBuffers(int sizeRing, int sizeLin) {
+	bufferSize = sizeRing;
+	sizeLinBuf = sizeLin;
 	imageMemory = new char*[bufferSize];
 	memoryID = new INT[bufferSize];
 	for(int i=0; i < bufferSize; i++) {
-		if(is_AllocImageMem(cam, getWidth(), getHeight(), bitsPerPixel, &imageMemory[i], &memoryID[i])) return -1;
+		if(is_AllocImageMem(cam, getWidth(), getHeight(), bitsPerPixel, &imageMemory[i], &memoryID[i])) return -1;	//TODO replace with width height etc from local variable to save bandwith
 		if(is_AddToSequence(cam, imageMemory[i], memoryID[i])) return -1;
 	}
 	is_InitImageQueue(cam, 0);
@@ -122,7 +140,7 @@ void QEye::onNewFrame() {
 	qDebug() << "buffer id" << id;
 	//emit newImage(image);
 
-	offset = (useFirstLinBuf ? 0 : sizeLinBuf*getWidth()*getHeight()*bytesPerPixel);
+	offset = (useFirstLinBuf ? 0 : sizeLinBuf*width*height*bytesPerPixel);
 	//offset = 0;
 
 	qDebug() << "copy mem" << is_CopyImageMem(cam, memLast, NULL, &linBuf[offset+linBufIndex*getWidth()*getHeight()*bytesPerPixel]);
