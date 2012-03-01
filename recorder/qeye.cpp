@@ -16,6 +16,8 @@ QEye::QEye(QObject *parent) {
 	converter = new Converter();
 
 	//setup threads
+	//grabber and storage objects and threads really only should be created, once init was successfull
+	//same goes for the ringbuffer
 	grabberThread = new QThread();
 	storageThread = new QThread;
 	converterThread = new QThread;
@@ -29,6 +31,7 @@ QEye::QEye(QObject *parent) {
 	converterThread->start();
 	grabberThread->setPriority(QThread::TimeCriticalPriority);
 
+	//signals and slots should be thought through again
 	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
 	connect(grabber, SIGNAL(newFrame(int, char *)), this, SLOT(onNewFrame(int, char *)));
 	connect(grabber, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
@@ -37,6 +40,7 @@ QEye::QEye(QObject *parent) {
 	connect(this, SIGNAL(stopping()), grabber, SLOT(stop()));
 	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToQImage(char *)));
 
+	//dont the dump file here, better in the constructor of the storage object
 	filename = QString("d:\\work\\dump");
 	QFile::remove(filename);
 	
@@ -119,6 +123,7 @@ int QEye::getWidth() {
 	}
 	else return -1;
 }
+
 
 int QEye::createBuffers(int sizeRing) {
 	bufferSize = sizeRing;

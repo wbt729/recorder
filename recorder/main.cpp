@@ -1,10 +1,12 @@
 #include "recorder.h"
-#include <QtGui/QApplication>
+
+#include <QtGui>
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {
-	QApplication a(argc, argv);
-	Recorder w;
-	w.show();
-	return a.exec();
+    QApplication a(argc, argv);
+    Recorder w;
+    w.show();
+    return a.exec();
 }

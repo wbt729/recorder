@@ -27,7 +27,6 @@ void Grabber::init(int w, int h, int bpp) {
 }
 
 void Grabber::start() {
-
 	running = true;
 	qDebug() << "start capturing" << is_CaptureVideo(*cam, IS_DONT_WAIT); //Linux
 	QTimer::singleShot(0, this, SLOT(grab()));
