@@ -10,34 +10,38 @@ QEye::QEye(QObject *parent) {
 	memoryID = NULL;
 	bufferSize = 0;
 	running = false;
+
 	grabber = new Grabber(&cam);
 	storage = new Storage();
 	converter = new Converter();
+
+	//setup threads
 	grabberThread = new QThread();
-	grabberThread->setPriority(QThread::TimeCriticalPriority);
 	storageThread = new QThread;
 	converterThread = new QThread;
-	qDebug() << "move grabber";
+
 	grabber->moveToThread(grabberThread);
-	qDebug() << "move storage";
 	storage->moveToThread(storageThread);
-	qDebug() << "move converter";
 	converter->moveToThread(converterThread);
+
 	grabberThread->start();
 	storageThread->start();
 	converterThread->start();
-	connect(grabber, SIGNAL(newFrame(char *)), this, SLOT(onNewFrame(char *)));
+	grabberThread->setPriority(QThread::TimeCriticalPriority);
+
+	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
+	connect(grabber, SIGNAL(newFrame(int, char *)), this, SLOT(onNewFrame(int, char *)));
+	connect(grabber, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
 	connect(grabber, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	connect(this, SIGNAL(starting()), grabber, SLOT(start()));
 	connect(this, SIGNAL(stopping()), grabber, SLOT(stop()));
 	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToQImage(char *)));
-	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
-	connect(grabber, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
+
 	filename = QString("d:\\work\\dump");
 	QFile::remove(filename);
 	
 
-	imagesReceived = 0;
+	numImagesReceived = 0;
 	bitsPerSample = 0;
 	channels = 0;
 	isConverting = false;
@@ -66,6 +70,10 @@ int	QEye::loadParameters(QString str) {
 		getHeight();
 	}
 	return ret;
+}
+
+int QEye::imagesReceived() {
+	return numImagesReceived;
 }
 
 int QEye::setColorMode(INT mode) {
@@ -133,8 +141,8 @@ void QEye::startCapture() {
 	qDebug() << "start";
 }
 
-void QEye::onNewFrame(char *buf) {
-	imagesReceived++;
+void QEye::onNewFrame(int numImg, char *buf) {
+	numImagesReceived = numImg;
 
 	if(!isConverting) {
 		isConverting = true;
@@ -160,7 +168,7 @@ int QEye::exit() {
 	grabber->blockSignals(true);
 	converter->blockSignals(true);
 	storage->blockSignals(true);
-	disconnect(this, SIGNAL(onNewFrame()));
+	disconnect(this, SIGNAL(onNewFrame(int, char*)));
 	stopCapture();
 	grabberThread->quit();
 	storageThread->quit();

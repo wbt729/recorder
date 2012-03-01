@@ -10,6 +10,7 @@ Grabber::Grabber(HIDS *camera, QObject *parent) {
 }
 
 Grabber::~Grabber() {
+	delete linBuf;
 }
 
 void Grabber::init(int w, int h, int bpp) {
@@ -17,16 +18,18 @@ void Grabber::init(int w, int h, int bpp) {
 	bytesPerPixel = bpp;
 	width = w;
 	height = h;
-	frameEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	linBuf = new char[2*sizeLinBuf*width*height*bytesPerPixel];
+#if defined _WIN64 || defined _WIN32
+	frameEvent = CreateEvent(NULL, FALSE, FALSE, NULL); //Linux
 	qDebug() << "init frame event" << is_InitEvent(*cam, frameEvent, IS_SET_EVENT_FRAME);
-	qDebug() << "enable frame event" << is_EnableEvent(*cam, IS_SET_EVENT_FRAME);
+#endif
+	qDebug() << "enable frame event" << is_EnableEvent(*cam, IS_SET_EVENT_FRAME); //Linux
 }
 
 void Grabber::start() {
 
 	running = true;
-	qDebug() << "start capturing" << is_CaptureVideo(*cam, IS_DONT_WAIT);
+	qDebug() << "start capturing" << is_CaptureVideo(*cam, IS_DONT_WAIT); //Linux
 	QTimer::singleShot(0, this, SLOT(grab()));
 }
 
@@ -34,10 +37,14 @@ void Grabber::grab() {
 	QTime timer;
 	timer.start();
 	//qDebug() << "grab";
+#if defined _WIN64 || defined _WIN32
 	DWORD dRet = WaitForSingleObject(frameEvent, 2000);
+#else if defined LINUX
+	DWORD dRet = (DWORD) is_WaitEvent(*cam, IS_SET_EVENT_FRAME, 1000);
+#endif
 
 
-	if(dRet == WAIT_OBJECT_0) {
+	if(dRet == 0) {
 		//new image received
 		//qDebug() << "new Frame";
 		INT id = 0;
@@ -46,7 +53,7 @@ void Grabber::grab() {
 
 		is_CopyImageMem(*cam, memLast, NULL, &linBuf[offset+linBufIndex*width*height*bytesPerPixel]);
 		is_UnlockSeqBuf(*cam, NULL, memLast);
-		emit newFrame(&linBuf[offset+linBufIndex*width*height*bytesPerPixel]);
+		emit newFrame(absFrameIndex, &linBuf[offset+linBufIndex*width*height*bytesPerPixel]);
 		linBufIndex++;
 		absFrameIndex++;
 		qDebug() << "absFrameIndex" << absFrameIndex;
@@ -109,5 +116,6 @@ void Grabber::grab() {
 
 void Grabber::stop() {
 	running = false;
+	is_DisableEvent(*cam, IS_SET_EVENT_FRAME);
 	return;
 }

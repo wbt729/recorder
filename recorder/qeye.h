@@ -29,6 +29,7 @@ public:
 	double getExposure();
 	void setExposure(double);
 	int setTrigger(bool);
+	int imagesReceived();
 
 private:
 	QFile logFile;
@@ -55,7 +56,7 @@ private:
 	
 	QString filename;
 
-	int imagesReceived;
+	int numImagesReceived;
 	int width;
 	int height;
 private slots:
@@ -65,7 +66,7 @@ private slots:
 public slots:
 	void startCapture();
 	void stopCapture();
-	void onNewFrame(char *);
+	void onNewFrame(int, char *);
 	void onError(int);
 	void convertBlock();
 signals:

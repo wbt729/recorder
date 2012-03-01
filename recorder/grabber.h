@@ -6,7 +6,7 @@
 #include <QTimer>
 #include <QTime>
 #include "uEye.h"
-#include "process.h"
+//#include "process.h"
 
 class Grabber : public QObject
 {
@@ -26,7 +26,7 @@ private:
 	char *memAct, *memLast;
 	INT id;
 	HIDS *cam;
-	HANDLE frameEvent;
+//	HANDLE frameEvent;
 	bool running;
 	INT sizeLinBuf;
 	bool useFirstLinBuf;
@@ -42,7 +42,7 @@ private slots:
 	void grab();
 
 signals:
-	void newFrame(char *);
+	void newFrame(int, char *);
 	void errors(int);
 	void linBufFull(char*, int);
 };

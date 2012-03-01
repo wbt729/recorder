@@ -24,7 +24,6 @@ private:
 	QPushButton *startButton;
 	QPushButton *stopButton;
 	QPushButton *convertButton;
-	int imagesReceived;
 	int errors;
 	TiffConverter *conv;
 private slots:
