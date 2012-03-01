@@ -23,7 +23,7 @@ public:
 	int setColorMode(int);
 	int getWidth();
 	int getHeight();
-	int createBuffers(int, int);
+	int createBuffers(int);
 	bool isRunning();
 	int exit();
 	double getExposure();
@@ -52,12 +52,9 @@ private:
 	bool running;
 	bool processingImage;
 	QImage *image;
-	char *linBuf;
+	
 	QString filename;
-	INT sizeLinBuf;
-	bool useFirstLinBuf;
-	int offset;
-	int linBufIndex;
+
 	int imagesReceived;
 	int width;
 	int height;
@@ -68,7 +65,7 @@ private slots:
 public slots:
 	void startCapture();
 	void stopCapture();
-	void onNewFrame();
+	void onNewFrame(char *);
 	void onError(int);
 	void convertBlock();
 signals:

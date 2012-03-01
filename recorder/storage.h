@@ -11,7 +11,7 @@ class Storage : public QObject {
 	Q_OBJECT
 
 public:
-	Storage(QObject *parent);
+	Storage(QObject *parent = 0);
 	~Storage();
 
 private:

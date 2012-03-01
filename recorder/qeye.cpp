@@ -10,35 +10,37 @@ QEye::QEye(QObject *parent) {
 	memoryID = NULL;
 	bufferSize = 0;
 	running = false;
-	grabber = new Grabber(this, &cam, &running);
-	storage = new Storage(this);
-	converter = new Converter(this);
-	grabberThread = new QThread;
+	grabber = new Grabber(&cam);
+	storage = new Storage();
+	converter = new Converter();
+	grabberThread = new QThread();
+	grabberThread->setPriority(QThread::TimeCriticalPriority);
 	storageThread = new QThread;
 	converterThread = new QThread;
+	qDebug() << "move grabber";
 	grabber->moveToThread(grabberThread);
+	qDebug() << "move storage";
 	storage->moveToThread(storageThread);
+	qDebug() << "move converter";
 	converter->moveToThread(converterThread);
 	grabberThread->start();
 	storageThread->start();
 	converterThread->start();
-	connect(grabber, SIGNAL(newFrame()), this, SLOT(onNewFrame()));
-	//connect(grabber, SIGNAL(newFrame()), this, SLOT(frameDelay()));
+	connect(grabber, SIGNAL(newFrame(char *)), this, SLOT(onNewFrame(char *)));
 	connect(grabber, SIGNAL(errors(int)), this, SLOT(onError(int)));
-	//connect(grabber, SIGNAL(newFrame()), storage, SLOT(saveLastImage()));
 	connect(this, SIGNAL(starting()), grabber, SLOT(start()));
+	connect(this, SIGNAL(stopping()), grabber, SLOT(stop()));
 	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToQImage(char *)));
 	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
-	connect(this, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
+	connect(grabber, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
 	filename = QString("d:\\work\\dump");
 	QFile::remove(filename);
-	sizeLinBuf = 0;
-	linBufIndex = 0;
-	isConverting = false;
+	
+
 	imagesReceived = 0;
-	useFirstLinBuf = true;
 	bitsPerSample = 0;
 	channels = 0;
+	isConverting = false;
 	bytesPerPixel = 0;
 	width = 0;
 	height = 0;
@@ -110,9 +112,8 @@ int QEye::getWidth() {
 	else return -1;
 }
 
-int QEye::createBuffers(int sizeRing, int sizeLin) {
+int QEye::createBuffers(int sizeRing) {
 	bufferSize = sizeRing;
-	sizeLinBuf = sizeLin;
 	imageMemory = new char*[bufferSize];
 	memoryID = new INT[bufferSize];
 	for(int i=0; i < bufferSize; i++) {
@@ -120,13 +121,11 @@ int QEye::createBuffers(int sizeRing, int sizeLin) {
 		if(is_AddToSequence(cam, imageMemory[i], memoryID[i])) return -1;
 	}
 	is_InitImageQueue(cam, 0);
-
-	linBuf = new char[2*sizeLinBuf*getWidth()*getHeight()*bytesPerPixel];
-
 	return 0;
 }
 
 void QEye::startCapture() {
+	grabber->init(getWidth(), getHeight(), bytesPerPixel);
 	converter->setResolution(getWidth(), getHeight(), channels, bitsPerSample, bytesPerPixel);
 	grabber->blockSignals(false);
 	running = true;
@@ -134,39 +133,22 @@ void QEye::startCapture() {
 	qDebug() << "start";
 }
 
-void QEye::onNewFrame() {
+void QEye::onNewFrame(char *buf) {
 	imagesReceived++;
-	char *memAct, *memLast;
-	INT id = 0;
-	is_GetActSeqBuf(cam, &id, &memAct, &memLast);
-	qDebug() << "buffer id" << id;
-
-	//calculate offset to first or second linear buffer
-	offset = (useFirstLinBuf ? 0 : sizeLinBuf*width*height*bytesPerPixel);
-
-	qDebug() << "copy mem" << is_CopyImageMem(cam, memLast, NULL, &linBuf[offset+linBufIndex*width*height*bytesPerPixel]);
-	qDebug() << "unlock mem" << is_UnlockSeqBuf(cam, NULL, memLast);
 
 	if(!isConverting) {
 		isConverting = true;
-		emit(newFrame(&linBuf[offset+linBufIndex*width*height*bytesPerPixel]));
+		emit(newFrame(buf));
 	}
 	else
 		qDebug() << "still converting";
-
-	linBufIndex++;
-	if(linBufIndex >= sizeLinBuf) {
-		emit linBufFull(&linBuf[offset], width*height*bytesPerPixel*sizeLinBuf);
-		linBufIndex = 0;
-		useFirstLinBuf = !useFirstLinBuf;
-	}
 	return;
 }
 
 void QEye::stopCapture() {
 	qDebug() << "QEye stop capture";
 	running = false;
-
+	emit stopping();
 }
 
 bool QEye::isRunning() {
