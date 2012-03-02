@@ -11,15 +11,15 @@ Recorder::Recorder(QWidget *parent, Qt::WFlags flags) {
 	imageLabel = new ImageLabel(this);
 	imageLabel->setText(tr("bla"));
 	layout->addWidget(imageLabel);
-	startButton = new QPushButton("start");
+	recordButton = new QPushButton("start");
 	stopButton = new QPushButton("stop");
 	convertButton = new QPushButton("convert");
-	layout->addWidget(startButton);
+	layout->addWidget(recordButton);
 	layout->addWidget(stopButton);
 	layout->addWidget(convertButton);
 	QTimer::singleShot(.1, this, SLOT(doThings()));
-	connect(startButton, SIGNAL(clicked()), cam, SLOT(startCapture()));
-	connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopCapture()));
+	connect(recordButton, SIGNAL(clicked()), cam, SLOT(startRecording()));
+	connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopRecording()));
 	connect(convertButton, SIGNAL(clicked()), cam, SLOT(convertBlock()));
 
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
@@ -40,6 +40,7 @@ void Recorder::doThings() {
 		cam->setColorMode(IS_CM_RGB10V2_PACKED);
 		cam->createBuffers(400);
 		statusBar()->showMessage("Ready");
+		cam->startCapture();
 	}
 	else statusBar()->showMessage("Init failed");
 }

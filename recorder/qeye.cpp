@@ -10,6 +10,8 @@ QEye::QEye(QObject *parent) {
 	memoryID = NULL;
 	bufferSize = 0;
 	running = false;
+	maxPreviewFreq = 15; //Hz;
+	makePreview = true;
 
 	grabber = new Grabber(&cam);
 	storage = new Storage();
@@ -52,6 +54,14 @@ QEye::QEye(QObject *parent) {
 	bytesPerPixel = 0;
 	width = 0;
 	height = 0;
+}
+
+void QEye::startRecording() {
+	grabber->startRecording();
+}
+
+void QEye::stopRecording() {
+	grabber->stopRecording();
 }
 
 QEye::~QEye() {
@@ -149,12 +159,17 @@ void QEye::startCapture() {
 void QEye::onNewFrame(int numImg, char *buf) {
 	numImagesReceived = numImg;
 
-	if(!isConverting) {
+	if(!isConverting && makePreview) {
+		makePreview = false;
 		isConverting = true;
 		emit(newFrame(buf));
+		QTimer::singleShot(1000/maxPreviewFreq, this, SLOT(onPreviewTimer()));
 	}
-	else
-		qDebug() << "still converting";
+	return;
+}
+
+void QEye::onPreviewTimer() {
+	makePreview = true;
 	return;
 }
 
@@ -162,6 +177,7 @@ void QEye::stopCapture() {
 	qDebug() << "QEye stop capture";
 	running = false;
 	emit stopping();
+	return;
 }
 
 bool QEye::isRunning() {
@@ -198,6 +214,7 @@ void QEye::setExposure(double exp) {
 
 void QEye::onError(int num) {
 	emit errors(num);
+	return;
 }
 
 int QEye::setTrigger(bool external) {
@@ -208,8 +225,10 @@ int QEye::setTrigger(bool external) {
 void QEye::onConversionDone(QImage *image) {
 	emit newImage(image);
 	isConverting = false;
+	return;
 }
 
 void QEye::convertBlock() {
 	converter->blockToTIFFs();
+	return;
 }

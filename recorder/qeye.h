@@ -50,9 +50,11 @@ private:
 	QThread *storageThread;
 	QThread *converterThread;
 	bool isConverting;
+	bool makePreview;
 	bool running;
 	bool processingImage;
 	QImage *image;
+	int maxPreviewFreq;
 	
 	QString filename;
 
@@ -62,6 +64,7 @@ private:
 private slots:
 	//void frameDelay();
 	void onConversionDone(QImage *);
+	void onPreviewTimer();
 
 public slots:
 	void startCapture();
@@ -69,6 +72,8 @@ public slots:
 	void onNewFrame(int, char *);
 	void onError(int);
 	void convertBlock();
+	void startRecording();
+	void stopRecording();
 signals:
 	void newImage(QImage *);
 	void starting();

@@ -21,22 +21,29 @@ public:
 public slots:
 	void start();
 	void stop();
+	void startRecording();
+	void stopRecording();
 
 private:
-	char *memAct, *memLast;
+	char *memAct, *memLast, *linBuf;
 	INT id;
 	HIDS *cam;
-//	HANDLE frameEvent;
-	bool running;
+	
 	INT sizeLinBuf;
-	bool useFirstLinBuf;
-	int offset;
-	int linBufIndex;
-	int width;
-	int height;
-	char *linBuf;
-	int bytesPerPixel;
+	bool running, recording, useFirstLinBuf;
+	int linBufIndex, offset, frameSize;
+	
+	int width, height, bytesPerPixel;
 	int absFrameIndex;
+
+#if defined _WIN64 || defined _WIN32
+	HANDLE frameEvent;
+#endif
+
+	void onNewFrame();
+	void onError();
+	DWORD waitForFrame();
+
 
 private slots:
 	void grab();

@@ -21,7 +21,7 @@ public:
 private:
 	QEye *cam;
 	ImageLabel *imageLabel;
-	QPushButton *startButton;
+	QPushButton *recordButton;
 	QPushButton *stopButton;
 	QPushButton *convertButton;
 	int errors;
