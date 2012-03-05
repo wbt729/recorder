@@ -26,6 +26,7 @@ Recorder::Recorder(QWidget *parent, Qt::WFlags flags) {
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
 	connect(cam, SIGNAL(newImage(QImage *)), this, SLOT(onNewImage()));
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
+	connect(cam, SIGNAL(countersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
 	errors = 0;
 }
 
@@ -56,11 +57,6 @@ void Recorder::onLabelMouseWheel(int steps) {
 	cam->setExposure(exp + (double) steps/5);
 }
 
-void Recorder::onNewImage() {
-	statusBar()->showMessage(tr("Images Received: %1, Errors: %2").arg(cam->imagesReceived()).arg(errors));
-}
-
-void Recorder::onError(int e) {
-	errors += e;
-	statusBar()->showMessage(tr("Images Received: %1, Errors: %2").arg(cam->imagesReceived()).arg(errors));
+void Recorder::onCountersChanged(int received, int recorded, int errors) {
+	statusBar()->showMessage(tr("Images Received: %1, Images Recorded: %2, Errors: %3").arg(received).arg(recorded).arg(errors));
 }

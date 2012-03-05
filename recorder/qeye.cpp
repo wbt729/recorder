@@ -1,8 +1,8 @@
 #include "qeye.h"
 
 QEye::QEye(QObject *parent) {
-	logFile.setFileName("log.txt");
-	logFile.open(QIODevice::Text | QIODevice::WriteOnly);
+	//logFile.setFileName("log.txt");
+	//logFile.open(QIODevice::Text | QIODevice::WriteOnly);
 	cam = NULL;
 	bitsPerPixel = 0;
 	colorMode = 0;
@@ -10,8 +10,18 @@ QEye::QEye(QObject *parent) {
 	memoryID = NULL;
 	bufferSize = 0;
 	running = false;
+	recording = false;
 	maxPreviewFreq = 15; //Hz;
 	makePreview = true;
+	numImagesReceived = 0;
+	numImagesRecorded = 0;
+	numErrors = 0;
+	bitsPerSample = 0;
+	channels = 0;
+	isConverting = false;
+	bytesPerPixel = 0;
+	width = 0;
+	height = 0;
 
 	grabber = new Grabber(&cam);
 	storage = new Storage();
@@ -33,34 +43,33 @@ QEye::QEye(QObject *parent) {
 	converterThread->start();
 	grabberThread->setPriority(QThread::TimeCriticalPriority);
 
+	//dont remove the dump file here, better in the constructor of the storage object, also put it into a local file with a relative path
+	filename = QString("d:\\work\\dump");
+	QFile::remove(filename);
+
 	//signals and slots should be thought through again
 	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
-	connect(grabber, SIGNAL(newFrame(int, char *)), this, SLOT(onNewFrame(int, char *)));
+	connect(converter, SIGNAL(newImage(QImage *)), this, SIGNAL(newImage(QImage *)));
 	connect(grabber, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
-	connect(grabber, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	connect(this, SIGNAL(starting()), grabber, SLOT(start()));
 	connect(this, SIGNAL(stopping()), grabber, SLOT(stop()));
 	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToQImage(char *)));
+	connect(grabber, SIGNAL(errors(int)), this, SLOT(onErrors(int)));	//forward error signal
+	connect(grabber, SIGNAL(newFrame(char*)), this, SLOT(onNewFrame(char*)));
+}
 
-	//dont the dump file here, better in the constructor of the storage object
-	filename = QString("d:\\work\\dump");
-	QFile::remove(filename);
-	
-
-	numImagesReceived = 0;
-	bitsPerSample = 0;
-	channels = 0;
-	isConverting = false;
-	bytesPerPixel = 0;
-	width = 0;
-	height = 0;
+void QEye::onErrors(int e) {
+	numErrors += e;
+	emit countersChanged(numImagesReceived, numImagesRecorded, numErrors);
 }
 
 void QEye::startRecording() {
+	recording = true;
 	grabber->startRecording();
 }
 
 void QEye::stopRecording() {
+	recording = false;
 	grabber->stopRecording();
 }
 
@@ -77,17 +86,78 @@ int QEye::init(int id) {
 	return ret;
 }
 
-int	QEye::loadParameters(QString str) {
-	int ret = is_LoadParameters(cam, str.toLatin1());
-	if(ret) {
-		getWidth();
-		getHeight();
-	}
-	return ret;
-}
-
 int QEye::imagesReceived() {
 	return numImagesReceived;
+}
+
+int QEye::imagesRecorded() {
+	return numImagesRecorded;
+}
+
+int QEye::getHeight() {
+	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
+		height = AOIRect.s32Height;
+		return height;
+	}
+	else return -1;
+}
+
+int QEye::getWidth() {
+	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
+		width = AOIRect.s32Width;
+		return width;
+	}
+	else return -1;
+}
+
+int QEye::createBuffers(int sizeRing) {
+	bufferSize = sizeRing;
+	imageMemory = new char*[bufferSize];
+	memoryID = new INT[bufferSize];
+	for(int i=0; i < bufferSize; i++) {
+		if(is_AllocImageMem(cam, getWidth(), getHeight(), bitsPerPixel, &imageMemory[i], &memoryID[i])) return -1;	//TODO replace with width height etc from local variable to save bandwith
+		if(is_AddToSequence(cam, imageMemory[i], memoryID[i])) return -1;
+	}
+	is_InitImageQueue(cam, 0);
+	return 0;
+}
+
+void QEye::onNewFrame(char *buf) {
+	numImagesReceived++;
+	if(recording)
+		numImagesRecorded++;
+
+	if(!isConverting && makePreview) {
+		makePreview = false;
+		isConverting = true;
+		emit(newFrame(buf));
+		QTimer::singleShot(1000/maxPreviewFreq, this, SLOT(onPreviewTimer()));
+	}
+	emit countersChanged(numImagesReceived, numImagesRecorded, numErrors);
+	return;
+}
+
+void QEye::onPreviewTimer() {
+	makePreview = true;
+	return;
+}
+
+void QEye::stopCapture() {
+	qDebug() << "QEye stop capture";
+	running = false;
+	emit stopping();
+	return;
+}
+
+void QEye::onConversionDone(QImage *image) {
+	emit newImage(image);
+	isConverting = false;
+	return;
+}
+
+void QEye::convertBlock() {
+	converter->blockToTIFFs();
+	return;
 }
 
 int QEye::setColorMode(INT mode) {
@@ -118,66 +188,29 @@ int QEye::setColorMode(INT mode) {
 	return is_SetColorMode(cam, mode);
 }
 
-int QEye::getHeight() {
-	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
-		height = AOIRect.s32Height;
-		return height;
+int	QEye::loadParameters(QString str) {
+	int ret = is_LoadParameters(cam, str.toLatin1());
+	if(ret) {
+		getWidth();
+		getHeight();
 	}
-	else return -1;
+	return ret;
 }
 
-int QEye::getWidth() {
-	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
-		width = AOIRect.s32Width;
-		return width;
-	}
-	else return -1;
+double QEye::getExposure() {
+	double exposure;
+	is_Exposure(cam, IS_EXPOSURE_CMD_GET_EXPOSURE, (void*)&exposure, sizeof(exposure));
+	return exposure;
 }
 
-
-int QEye::createBuffers(int sizeRing) {
-	bufferSize = sizeRing;
-	imageMemory = new char*[bufferSize];
-	memoryID = new INT[bufferSize];
-	for(int i=0; i < bufferSize; i++) {
-		if(is_AllocImageMem(cam, getWidth(), getHeight(), bitsPerPixel, &imageMemory[i], &memoryID[i])) return -1;	//TODO replace with width height etc from local variable to save bandwith
-		if(is_AddToSequence(cam, imageMemory[i], memoryID[i])) return -1;
-	}
-	is_InitImageQueue(cam, 0);
-	return 0;
-}
-
-void QEye::startCapture() {
-	grabber->init(getWidth(), getHeight(), bytesPerPixel);
-	converter->setResolution(getWidth(), getHeight(), channels, bitsPerSample, bytesPerPixel);
-	grabber->blockSignals(false);
-	running = true;
-	emit starting();
-	qDebug() << "start";
-}
-
-void QEye::onNewFrame(int numImg, char *buf) {
-	numImagesReceived = numImg;
-
-	if(!isConverting && makePreview) {
-		makePreview = false;
-		isConverting = true;
-		emit(newFrame(buf));
-		QTimer::singleShot(1000/maxPreviewFreq, this, SLOT(onPreviewTimer()));
-	}
+void QEye::setExposure(double exp) {
+	INT retVal = is_Exposure(cam, IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&exp, sizeof(exp));
 	return;
 }
 
-void QEye::onPreviewTimer() {
-	makePreview = true;
-	return;
-}
-
-void QEye::stopCapture() {
-	qDebug() << "QEye stop capture";
-	running = false;
-	emit stopping();
-	return;
+int QEye::setTrigger(bool external) {
+	if(external) return is_SetExternalTrigger(cam, IS_SET_TRIGGER_LO_HI);
+	else return is_SetExternalTrigger(cam, IS_SET_TRIGGER_SOFTWARE);
 }
 
 bool QEye::isRunning() {
@@ -201,34 +234,11 @@ int QEye::exit() {
 	return is_ExitCamera(cam);
 }
 
-double QEye::getExposure() {
-	double exposure;
-	is_Exposure(cam, IS_EXPOSURE_CMD_GET_EXPOSURE, (void*)&exposure, sizeof(exposure));
-	return exposure;
-}
-
-void QEye::setExposure(double exp) {
-	INT retVal = is_Exposure(cam, IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&exp, sizeof(exp));
-	return;
-}
-
-void QEye::onError(int num) {
-	emit errors(num);
-	return;
-}
-
-int QEye::setTrigger(bool external) {
-	if(external) return is_SetExternalTrigger(cam, IS_SET_TRIGGER_LO_HI);
-	else return is_SetExternalTrigger(cam, IS_SET_TRIGGER_SOFTWARE);
-}
-
-void QEye::onConversionDone(QImage *image) {
-	emit newImage(image);
-	isConverting = false;
-	return;
-}
-
-void QEye::convertBlock() {
-	converter->blockToTIFFs();
-	return;
+void QEye::startCapture() {
+	grabber->init(getWidth(), getHeight(), bytesPerPixel);
+	converter->setResolution(getWidth(), getHeight(), channels, bitsPerSample, bytesPerPixel);
+	grabber->blockSignals(false);
+	running = true;
+	emit starting();
+	qDebug() << "start";
 }

@@ -25,14 +25,17 @@ public:
 	int getHeight();
 	int createBuffers(int);
 	bool isRunning();
+	bool isRecording();
 	int exit();
 	double getExposure();
 	void setExposure(double);
 	int setTrigger(bool);
 	int imagesReceived();
+	int errorsReceived();
+	int imagesRecorded();
 
 private:
-	QFile logFile;
+	//QFile logFile;
 	HIDS cam;
 	INT bitsPerSample;
 	INT channels;
@@ -51,7 +54,7 @@ private:
 	QThread *converterThread;
 	bool isConverting;
 	bool makePreview;
-	bool running;
+	bool running, recording;
 	bool processingImage;
 	QImage *image;
 	int maxPreviewFreq;
@@ -59,18 +62,19 @@ private:
 	QString filename;
 
 	int numImagesReceived;
+	int numImagesRecorded;
+	int numErrors;
 	int width;
 	int height;
 private slots:
-	//void frameDelay();
 	void onConversionDone(QImage *);
 	void onPreviewTimer();
 
 public slots:
 	void startCapture();
 	void stopCapture();
-	void onNewFrame(int, char *);
-	void onError(int);
+	void onNewFrame(char *);
+	void onErrors(int);
 	void convertBlock();
 	void startRecording();
 	void stopRecording();
@@ -79,8 +83,10 @@ signals:
 	void starting();
 	void stopping();
 	void errors(int);
+	//void newFrame(int, int, char *);
 	void newFrame(char *);
 	void linBufFull(char *, int);
+	void countersChanged(int, int, int); //images received, images recorded, errors
 };
 
 #endif // QEYE_H

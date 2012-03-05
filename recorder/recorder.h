@@ -29,8 +29,9 @@ private:
 private slots:
 	void doThings();
 	void onLabelMouseWheel(int);
-	void onNewImage();
-	void onError(int);
+	//void onNewImage();
+	//void onError(int);
+	void onCountersChanged(int, int, int);
 protected:
 	virtual void closeEvent(QCloseEvent *);
 };

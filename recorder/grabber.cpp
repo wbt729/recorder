@@ -7,7 +7,8 @@ Grabber::Grabber(HIDS *camera, QObject *parent) {
 	sizeLinBuf = 0;
 	linBufIndex = 0;
 	useFirstLinBuf = true;
-	absFrameIndex = 0;
+	//absFrameIndex = 0;
+	//absRecIndex = 0;
 	recording = false;
 }
 
@@ -22,7 +23,6 @@ void Grabber::init(int w, int h, int bpp) {
 	width = w;
 	height = h;
 	frameSize = width*height*bytesPerPixel;
-	//linBuf = new char[2*sizeLinBuf*width*height*bytesPerPixel];
 	linBuf = new char[2*sizeLinBuf*frameSize];
 #if defined _WIN64 || defined _WIN32
 	frameEvent = CreateEvent(NULL, FALSE, FALSE, NULL); //Linux
@@ -41,11 +41,11 @@ void Grabber::grab() {
 	if(running) {
 		QTime timer;
 		timer.start();
-
+		checkForErrors();
 		if(waitForFrame() == 0)
 			onNewFrame();
 		else
-			onError();
+			emit errors(1);
 
 		QTimer::singleShot(0, this, SLOT(grab())); //set timer to call next grab
 		//qDebug() << "processing elapsed time:" << timer.elapsed() << "ms";
@@ -65,10 +65,6 @@ DWORD Grabber::waitForFrame() {
 	#endif
 }
 
-void Grabber::onError() {
-	emit errors(1);
-}
-
 void Grabber::onNewFrame() {
 	INT id = 0;
 	offset = (useFirstLinBuf ? 0 : sizeLinBuf*frameSize);
@@ -76,6 +72,7 @@ void Grabber::onNewFrame() {
 	if(recording) {
 		is_CopyImageMem(*cam, memLast, NULL, &linBuf[offset+linBufIndex*frameSize]);
 		linBufIndex++;
+		//absRecIndex++;
 		if(linBufIndex >= sizeLinBuf) {
 			emit linBufFull(&linBuf[offset], frameSize*sizeLinBuf);
 			linBufIndex = 0;
@@ -83,10 +80,18 @@ void Grabber::onNewFrame() {
 		}
 	}
 	is_UnlockSeqBuf(*cam, NULL, memLast);
-	absFrameIndex++;
-	emit newFrame(absFrameIndex, memLast);
+	//absFrameIndex++;
+	//emit newFrame(absFrameIndex, absRecIndex, memLast);
+	emit newFrame(memLast);
 
 }
+
+void Grabber::checkForErrors() {
+	UEYE_CAPTURE_STATUS_INFO captureStatusInfo;
+	is_CaptureStatus(*cam, IS_CAPTURE_STATUS_INFO_CMD_GET, (void*) &captureStatusInfo, sizeof(captureStatusInfo));
+	if(captureStatusInfo.dwCapStatusCnt_Total) emit errors(captureStatusInfo.dwCapStatusCnt_Total);
+}
+
 
 void Grabber::startRecording() {
 	qDebug() << "start Recording";
@@ -101,6 +106,10 @@ void Grabber::stopRecording() {
 	recording = false;
 	return;
 }
+
+//int Grabber::imagesReceived() {
+//	return absFrameIndex;
+//}
 
 //void Grabber::start() {
 //	//is_SetSensorTestImage(*cam, IS_TEST_IMAGE_BLACK, NULL;)
