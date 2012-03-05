@@ -42,6 +42,7 @@ void Recorder::doThings() {
 		cam->createBuffers(400);
 		statusBar()->showMessage("Ready");
 		cam->startCapture();
+		//cam->startRecording();
 	}
 	else statusBar()->showMessage("Init failed");
 }

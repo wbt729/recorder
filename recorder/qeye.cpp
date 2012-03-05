@@ -64,6 +64,8 @@ void QEye::onErrors(int e) {
 }
 
 void QEye::startRecording() {
+	if(!running)
+		startCapture();
 	recording = true;
 	grabber->startRecording();
 }

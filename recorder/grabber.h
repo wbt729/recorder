@@ -17,7 +17,6 @@ public:
 	Grabber(HIDS*, QObject *parent = 0);
 	~Grabber();
 	void init(int, int, int);
-	//int imagesReceived();
 
 public slots:
 	void start();
@@ -35,8 +34,6 @@ private:
 	int linBufIndex, offset, frameSize;
 	
 	int width, height, bytesPerPixel;
-	//int absFrameIndex;	//number of images received
-	//int absRecIndex;	//number of images recorded
 
 #if defined _WIN64 || defined _WIN32
 	HANDLE frameEvent;
@@ -51,7 +48,6 @@ private slots:
 	void checkForErrors();
 
 signals:
-	//void newFrame(int, int, char *);
 	void newFrame(char *);
 	void errors(int);
 	void linBufFull(char*, int);
