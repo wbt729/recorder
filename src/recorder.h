@@ -19,7 +19,7 @@ class Recorder : public QMainWindow
 	Q_OBJECT
 
 public:
-	Recorder(bool r = false, QWidget *parent = 0, Qt::WFlags flags = 0);
+	Recorder(bool t = false, bool r = false, QWidget *parent = 0, Qt::WFlags flags = 0);
 	~Recorder();
 private:
 	QProgressDialog *progressDialog;
@@ -31,12 +31,14 @@ private:
 	int errors;
 	TiffConverter *conv;
 	bool record; //start triggered recording at startup
+	bool trigger; //use external trigger
 private slots:
 	void doThings();
 	void onLabelMouseWheel(int);
 	void onCountersChanged(int, int, int);
 	void onConvertButtonClicked();
 	void onConverting(int, int);
+	void onRecordButton(bool);
 protected:
 	virtual void closeEvent(QCloseEvent *);
 };

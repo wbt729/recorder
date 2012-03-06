@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 	bool record = false;
+	bool trigger = false;
 
 	//parse cli arguments
 	for(int i=0; i<argc; i++) {
@@ -18,11 +19,15 @@ int main(int argc, char *argv[])
 			qDebug() << "start recording immediately";
 		}
 
+		else if (arg == QString("trigger")) {
+			trigger = true;
+		}
+
 		else
 			qDebug() << QObject::tr("argument %1 ignored").arg(i);
 	}
 	
-    Recorder w(record);
+    Recorder w(trigger, record);
     w.show();
     return a.exec();
 }

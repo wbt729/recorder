@@ -28,7 +28,7 @@ QEye::QEye(QObject *parent) {
 	//setup threads
 	//grabber and storage objects and threads really only should be created, once init was successfull
 	//same goes for the ringbuffer
-	grabberThread = new QThread();
+	grabberThread = new QThread;
 	storageThread = new QThread;
 	converterThread = new QThread;
 

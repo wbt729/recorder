@@ -1,7 +1,8 @@
 #include "recorder.h"
 
-Recorder::Recorder(bool r, QWidget *parent, Qt::WFlags flags) {
+Recorder::Recorder(bool t, bool r, QWidget *parent, Qt::WFlags flags) {
 	record = r;
+	trigger = t;
 	QWidget *centralWidget = new QWidget();
 	QGridLayout *layout = new QGridLayout();
 	centralWidget->setLayout(layout);
@@ -13,14 +14,16 @@ Recorder::Recorder(bool r, QWidget *parent, Qt::WFlags flags) {
 	imageLabel = new ImageLabel(this);
 	imageLabel->setText(tr("bla"));
 	layout->addWidget(imageLabel);
-	recordButton = new QPushButton("start");
-	stopButton = new QPushButton("stop");
+	recordButton = new QPushButton("record");
+	recordButton->setCheckable(true);
+	//stopButton = new QPushButton("stop");
 	convertButton = new QPushButton("convert");
 	layout->addWidget(recordButton);
-	layout->addWidget(stopButton);
+	//layout->addWidget(stopButton);
 	layout->addWidget(convertButton);
-	connect(recordButton, SIGNAL(clicked()), cam, SLOT(startRecording()));
-	connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopRecording()));
+	connect(recordButton, SIGNAL(toggled(bool)), this, SLOT(onRecordButton(bool)));
+	//connect(recordButton, SIGNAL(clicked()), cam, SLOT(startRecording()));
+	//connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopRecording()));
 	//connect(convertButton, SIGNAL(clicked()), cam, SLOT(convertBlock()));
 	connect(convertButton, SIGNAL(clicked()), this, SLOT(onConvertButtonClicked()));
 
@@ -37,13 +40,21 @@ Recorder::Recorder(bool r, QWidget *parent, Qt::WFlags flags) {
 Recorder::~Recorder() {
 }
 
+void Recorder::onRecordButton(bool checked) {
+	if(checked)
+		cam->startRecording();
+	else
+		cam->stopRecording();
+}
+
 void Recorder::doThings() {
 	if(cam->init() != 0) {
 		int camsFound = QEye::countFreeCams();
 		statusBar()->showMessage("Init failed");
 		QMessageBox noCamMsgBox(this);
-		noCamMsgBox.setText(tr("There are %1 uEye cameras on this network. No free camera could be found. Check if camera is already open or check network connections. Then try again.").arg(camsFound));
+		noCamMsgBox.setText(tr("There are %1 uEye cameras on this network. No free camera could be found. Check if the camera is already opened somewhere else or check network connections. Then restart this program.").arg(camsFound));
 		noCamMsgBox.exec();
+		recordButton->setDisabled(true);
 		//close();
 		return;
 	}
@@ -54,12 +65,15 @@ void Recorder::doThings() {
 		cam->createBuffers(400);
 		statusBar()->showMessage("Ready");
 
-		if(record) {
-			cam->startRecording();
+		if(trigger) {
 			cam->setTrigger(true);
 		}
+
+		if(record) {
+			recordButton->setChecked(true);
+			cam->startRecording();
+		}
 		else {
-			cam->setTrigger(true);
 			cam->startCapture();
 		}
 	}
@@ -82,6 +96,8 @@ void Recorder::onCountersChanged(int received, int recorded, int errors) {
 
 void Recorder::onConvertButtonClicked() {
 	connect(cam, SIGNAL(converting(int, int)), this, SLOT(onConverting(int, int)));
+	progressDialog->setCancelButton(0);
+	progressDialog->setModal(true);
 	progressDialog->show();
 	cam->convertBlock();
 }
