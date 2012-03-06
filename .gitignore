@@ -12,3 +12,4 @@ ipch/**/*
 *.exe
 *.ilk
 *.pdb
+recorder/Debug/
