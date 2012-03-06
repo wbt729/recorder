@@ -1,6 +1,6 @@
 #include "recorder.h"
 
-Recorder::Recorder(QWidget *parent, Qt::WFlags flags) {
+Recorder::Recorder(bool h, QWidget *parent, Qt::WFlags flags) {
 	QWidget *centralWidget = new QWidget();
 	QGridLayout *layout = new QGridLayout();
 	centralWidget->setLayout(layout);

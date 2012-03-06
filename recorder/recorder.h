@@ -18,7 +18,7 @@ class Recorder : public QMainWindow
 	Q_OBJECT
 
 public:
-	Recorder(QWidget *parent = 0, Qt::WFlags flags = 0);
+	Recorder(bool h = false, QWidget *parent = 0, Qt::WFlags flags = 0);
 	~Recorder();
 private:
 	QEye *cam;
@@ -28,6 +28,7 @@ private:
 	QPushButton *convertButton;
 	int errors;
 	TiffConverter *conv;
+	bool headless;
 private slots:
 	void doThings();
 	void onLabelMouseWheel(int);
