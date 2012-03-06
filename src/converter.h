@@ -35,6 +35,7 @@ public slots:
 
 signals:
 	void newImage(QImage*);
+	void converting(int, int);	//recent image, total number of images
 };
 
 #endif // CONVERTER_H

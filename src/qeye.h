@@ -80,6 +80,7 @@ public slots:
 	void startRecording();
 	void stopRecording();
 signals:
+	void converting(int, int);
 	void newImage(QImage *);
 	void starting();
 	void stopping();

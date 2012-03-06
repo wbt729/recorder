@@ -1,8 +1,6 @@
 #include "qeye.h"
 
 QEye::QEye(QObject *parent) {
-	//logFile.setFileName("log.txt");
-	//logFile.open(QIODevice::Text | QIODevice::WriteOnly);
 	cam = NULL;
 	bitsPerPixel = 0;
 	colorMode = 0;
@@ -43,13 +41,10 @@ QEye::QEye(QObject *parent) {
 	converterThread->start();
 	grabberThread->setPriority(QThread::TimeCriticalPriority);
 
-	//dont remove the dump file here, better in the constructor of the storage object, also put it into a local file with a relative path
-	filename = QString("d:\\work\\dump");
-	QFile::remove(filename);
-
 	//signals and slots should be thought through again
 	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
 	connect(converter, SIGNAL(newImage(QImage *)), this, SIGNAL(newImage(QImage *)));
+	connect(converter, SIGNAL(converting(int, int)), this, SIGNAL(converting(int, int)));
 	connect(grabber, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
 	connect(this, SIGNAL(starting()), grabber, SLOT(start()));
 	connect(this, SIGNAL(stopping()), grabber, SLOT(stop()));
@@ -64,6 +59,10 @@ void QEye::onErrors(int e) {
 }
 
 void QEye::startRecording() {
+	//dont remove the dump file here, better in the constructor of the storage object, also put it into a local file with a relative path
+	filename = QString("d:\\work\\dump");
+	QFile::remove(filename);
+
 	if(!running)
 		startCapture();
 	recording = true;
@@ -224,12 +223,13 @@ int QEye::exit() {
 	grabber->blockSignals(true);
 	converter->blockSignals(true);
 	storage->blockSignals(true);
-	disconnect(this, SIGNAL(onNewFrame(int, char*)));
+	//disconnect(this, SIGNAL(onNewFrame(int, char*)));
 	stopCapture();
 	grabberThread->quit();
 	storageThread->quit();
 	converterThread->quit();
 	qDebug() << "QEye: wait for Threads to finish";
+	grabberThread->terminate();	//this is not good, grabber thread is just killed without cleaning up
 	qDebug() << "QEye: grabber thread" << grabberThread->wait();
 	qDebug() << "QEye: storage thread" << storageThread->wait();
 	qDebug() << "QEye: converter thread" << converterThread->wait();

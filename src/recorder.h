@@ -11,6 +11,7 @@
 #include "imagelabel.h"
 #include "tiffconverter.h"
 #include <QErrorMessage>
+#include <qprogressdialog.h>
 #include <QMessageBox>
 
 class Recorder : public QMainWindow
@@ -18,9 +19,10 @@ class Recorder : public QMainWindow
 	Q_OBJECT
 
 public:
-	Recorder(bool h = false, QWidget *parent = 0, Qt::WFlags flags = 0);
+	Recorder(bool r = false, QWidget *parent = 0, Qt::WFlags flags = 0);
 	~Recorder();
 private:
+	QProgressDialog *progressDialog;
 	QEye *cam;
 	ImageLabel *imageLabel;
 	QPushButton *recordButton;
@@ -28,11 +30,13 @@ private:
 	QPushButton *convertButton;
 	int errors;
 	TiffConverter *conv;
-	bool headless;
+	bool record; //start triggered recording at startup
 private slots:
 	void doThings();
 	void onLabelMouseWheel(int);
 	void onCountersChanged(int, int, int);
+	void onConvertButtonClicked();
+	void onConverting(int, int);
 protected:
 	virtual void closeEvent(QCloseEvent *);
 };

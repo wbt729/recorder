@@ -106,9 +106,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="recorder.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="recorder.qrc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
@@ -133,11 +130,6 @@
     <CustomBuild Include="..\src\tiffconverter.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="GeneratedFiles\ui_recorder.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

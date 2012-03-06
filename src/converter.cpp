@@ -101,6 +101,7 @@ void Converter::blockToTIFFs() {
 	//iterate through data dump
 	for(int l = 0; l < file.size()/(width*height*bytesPerPixel); l++) {
 		qDebug() << "converting image" << l+1 << "of" << file.size()/(width*height*bytesPerPixel);
+		emit converting(l+1, file.size()/(width*height*bytesPerPixel));
 
 		in.readRawData((char*) rawData, width*height*bytesPerPixel);
 		QVector<unsigned short> samples = readSamples(rawData);

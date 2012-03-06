@@ -1,12 +1,14 @@
 #include "recorder.h"
 
-Recorder::Recorder(bool h, QWidget *parent, Qt::WFlags flags) {
+Recorder::Recorder(bool r, QWidget *parent, Qt::WFlags flags) {
+	record = r;
 	QWidget *centralWidget = new QWidget();
 	QGridLayout *layout = new QGridLayout();
 	centralWidget->setLayout(layout);
 	setCentralWidget(centralWidget);
 
 	cam = new QEye(this);
+	progressDialog = new QProgressDialog(this);
 	conv = new TiffConverter(this);
 	imageLabel = new ImageLabel(this);
 	imageLabel->setText(tr("bla"));
@@ -17,10 +19,10 @@ Recorder::Recorder(bool h, QWidget *parent, Qt::WFlags flags) {
 	layout->addWidget(recordButton);
 	layout->addWidget(stopButton);
 	layout->addWidget(convertButton);
-	QTimer::singleShot(.1, this, SLOT(doThings()));
 	connect(recordButton, SIGNAL(clicked()), cam, SLOT(startRecording()));
 	connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopRecording()));
-	connect(convertButton, SIGNAL(clicked()), cam, SLOT(convertBlock()));
+	//connect(convertButton, SIGNAL(clicked()), cam, SLOT(convertBlock()));
+	connect(convertButton, SIGNAL(clicked()), this, SLOT(onConvertButtonClicked()));
 
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
@@ -28,6 +30,8 @@ Recorder::Recorder(bool h, QWidget *parent, Qt::WFlags flags) {
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	connect(cam, SIGNAL(countersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
 	errors = 0;
+
+	QTimer::singleShot(.1, this, SLOT(doThings()));
 }
 
 Recorder::~Recorder() {
@@ -40,18 +44,24 @@ void Recorder::doThings() {
 		QMessageBox noCamMsgBox(this);
 		noCamMsgBox.setText(tr("There are %1 uEye cameras on this network. No free camera could be found. Check if camera is already open or check network connections. Then try again.").arg(camsFound));
 		noCamMsgBox.exec();
-		close();
+		//close();
 		return;
 	}
 	else {
-		//cam->setTrigger(true);
 		cam->loadParameters("d:\\work\\ueye.ini");
 		//cam->setColorMode(IS_CM_RGB8_PACKED);
 		cam->setColorMode(IS_CM_RGB10V2_PACKED);
 		cam->createBuffers(400);
 		statusBar()->showMessage("Ready");
-		cam->startCapture();
-		//cam->startRecording();
+
+		if(record) {
+			cam->startRecording();
+			cam->setTrigger(true);
+		}
+		else {
+			cam->setTrigger(true);
+			cam->startCapture();
+		}
 	}
 }
 
@@ -68,4 +78,17 @@ void Recorder::onLabelMouseWheel(int steps) {
 
 void Recorder::onCountersChanged(int received, int recorded, int errors) {
 	statusBar()->showMessage(tr("Images Received: %1, Images Recorded: %2, Errors: %3").arg(received).arg(recorded).arg(errors));
+}
+
+void Recorder::onConvertButtonClicked() {
+	connect(cam, SIGNAL(converting(int, int)), this, SLOT(onConverting(int, int)));
+	progressDialog->show();
+	cam->convertBlock();
+}
+
+void Recorder::onConverting(int recent, int total) {
+	progressDialog->setMaximum(total);
+	progressDialog->setValue(recent);
+	if(recent == total)
+		progressDialog->close();
 }
