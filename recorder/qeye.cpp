@@ -244,3 +244,10 @@ void QEye::startCapture() {
 	emit starting();
 	qDebug() << "start";
 }
+
+int QEye::countFreeCams() {
+	int ret;
+	INT num;
+	ret = is_GetNumberOfCameras(&num);
+	return (int) num;
+}

@@ -10,6 +10,8 @@
 #include "qeye.h"
 #include "imagelabel.h"
 #include "tiffconverter.h"
+#include <QErrorMessage>
+#include <QMessageBox>
 
 class Recorder : public QMainWindow
 {
@@ -29,8 +31,6 @@ private:
 private slots:
 	void doThings();
 	void onLabelMouseWheel(int);
-	//void onNewImage();
-	//void onError(int);
 	void onCountersChanged(int, int, int);
 protected:
 	virtual void closeEvent(QCloseEvent *);

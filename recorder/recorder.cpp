@@ -34,7 +34,16 @@ Recorder::~Recorder() {
 }
 
 void Recorder::doThings() {
-	if(cam->init() == 0) {
+	if(cam->init() != 0) {
+		int camsFound = QEye::countFreeCams();
+		statusBar()->showMessage("Init failed");
+		QMessageBox noCamMsgBox(this);
+		noCamMsgBox.setText(tr("There are %1 uEye cameras on this network. No free camera could be found. Check if camera is already open or check network connections. Then try again.").arg(camsFound));
+		noCamMsgBox.exec();
+		close();
+		return;
+	}
+	else {
 		//cam->setTrigger(true);
 		cam->loadParameters("d:\\work\\ueye.ini");
 		//cam->setColorMode(IS_CM_RGB8_PACKED);
@@ -44,7 +53,6 @@ void Recorder::doThings() {
 		cam->startCapture();
 		//cam->startRecording();
 	}
-	else statusBar()->showMessage("Init failed");
 }
 
 void Recorder::closeEvent(QCloseEvent *event) {

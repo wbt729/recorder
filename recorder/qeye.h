@@ -33,6 +33,7 @@ public:
 	int imagesReceived();
 	int errorsReceived();
 	int imagesRecorded();
+	static int countFreeCams();
 
 private:
 	//QFile logFile;
