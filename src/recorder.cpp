@@ -9,6 +9,11 @@ Recorder::Recorder(bool t, bool r, QWidget *parent, Qt::WFlags flags) {
 	setCentralWidget(centralWidget);
 	setMinimumSize(1000, 600);
 
+	sampler = new Sampler();
+	samplerThread = new QThread();
+	sampler->moveToThread(samplerThread);
+	samplerThread->start();
+
 	plot = new MeanPlot();
 	cam = new QEye(this);
 	progressDialog = new QProgressDialog(this);
@@ -29,8 +34,10 @@ Recorder::Recorder(bool t, bool r, QWidget *parent, Qt::WFlags flags) {
 	//connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopRecording()));
 	//connect(convertButton, SIGNAL(clicked()), cam, SLOT(convertBlock()));
 	connect(convertButton, SIGNAL(clicked()), this, SLOT(onConvertButtonClicked()));
+	connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
 
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
+	connect(cam, SIGNAL(newMat(cv::Mat *)), sampler, SLOT(setMat(cv::Mat *)));
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
 	connect(cam, SIGNAL(newImage(QImage *)), this, SLOT(onNewImage()));
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));

@@ -82,6 +82,7 @@ public slots:
 signals:
 	void converting(int, int);
 	void newImage(QImage *);
+	void newMat(cv::Mat *);
 	void starting();
 	void stopping();
 	void errors(int);

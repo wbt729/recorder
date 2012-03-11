@@ -98,7 +98,7 @@ int QEye::imagesRecorded() {
 }
 
 int QEye::getHeight() {
-	qDebug() << "get height";
+	//qDebug() << "get height";
 	INT retVal = -1;
 	retVal = is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect));
 	if(retVal == 0) {
@@ -109,7 +109,7 @@ int QEye::getHeight() {
 }
 
 int QEye::getWidth() {
-	qDebug() << "get width";
+	//qDebug() << "get width";
 	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
 		width = AOIRect.s32Width;
 		return width;

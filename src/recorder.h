@@ -14,6 +14,7 @@
 #include <qprogressdialog.h>
 #include <QMessageBox>
 #include "meanplot.h"
+#include "sampler.h"
 
 class Recorder : public QMainWindow
 {
@@ -23,9 +24,11 @@ public:
 	Recorder(bool t = false, bool r = false, QWidget *parent = 0, Qt::WFlags flags = 0);
 	~Recorder();
 private:
+	QThread *samplerThread;
 	QProgressDialog *progressDialog;
 	QEye *cam;
 	MeanPlot *plot;
+	Sampler *sampler;
 	ImageLabel *imageLabel;
 	QPushButton *recordButton;
 	QPushButton *stopButton;

@@ -45,11 +45,12 @@ void MeanPlot::updateData(double meanRed, double meanGreen, double meanBlue) {
 	//meanGreen = (meanGreen + 4*d_y.last())/5;
 	//meanGreen = meanGreen;
 //	setAxisScale(QwtPlot::yLeft, (d_y.last()+meanGreen)/2-4, (d_y.last()+meanGreen)/2+4);
-	setAxisScale(QwtPlot::yLeft, -2, +2);
+//	setAxisScale(QwtPlot::yLeft, -2, +2);
 	d_y.append(meanGreen);
 
 //	std::cout << "mean rec: " << meanGreen << std::endl;
-//	setAxisScale(QwtPlot::yLeft, meanGreen-2, meanGreen+2);
+	//setAxisScale(QwtPlot::yLeft, meanGreen-200, meanGreen+200);
+	setAxisScale(QwtPlot::yLeft, 0, 1023);
 
 	replot();
 }
