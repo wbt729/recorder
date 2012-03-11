@@ -44,11 +44,13 @@ QEye::QEye(QObject *parent) {
 	//signals and slots should be thought through again
 	connect(converter, SIGNAL(newImage(QImage *)), this, SLOT(onConversionDone(QImage *)));
 	connect(converter, SIGNAL(newImage(QImage *)), this, SIGNAL(newImage(QImage *)));
+	connect(converter, SIGNAL(newMat(cv::Mat *)), this, SIGNAL(newMat(cv::Mat *)));
 	connect(converter, SIGNAL(converting(int, int)), this, SIGNAL(converting(int, int)));
 	connect(grabber, SIGNAL(linBufFull(char *, int)), storage, SLOT(saveLinBuf(char *, int)));
 	connect(this, SIGNAL(starting()), grabber, SLOT(start()));
 	connect(this, SIGNAL(stopping()), grabber, SLOT(stop()));
 	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToQImage(char *)));
+	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToCvMat(char *)));
 	connect(grabber, SIGNAL(errors(int)), this, SLOT(onErrors(int)));	//forward error signal
 	connect(grabber, SIGNAL(newFrame(char*)), this, SLOT(onNewFrame(char*)));
 }
@@ -96,7 +98,10 @@ int QEye::imagesRecorded() {
 }
 
 int QEye::getHeight() {
-	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
+	qDebug() << "get height";
+	INT retVal = -1;
+	retVal = is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect));
+	if(retVal == 0) {
 		height = AOIRect.s32Height;
 		return height;
 	}
@@ -104,6 +109,7 @@ int QEye::getHeight() {
 }
 
 int QEye::getWidth() {
+	qDebug() << "get width";
 	if(is_AOI(cam, IS_AOI_IMAGE_GET_AOI, &AOIRect, sizeof(AOIRect)) == 0) {
 		width = AOIRect.s32Width;
 		return width;

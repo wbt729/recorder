@@ -1,6 +1,7 @@
 #ifndef CONVERTER_H
 #define CONVERTER_H
 
+#include "opencv2/opencv.hpp"
 #include <QFile>
 #include <QDebug>
 #include <QByteArray>
@@ -12,14 +13,14 @@
 #include "tiff.h"
 #include "tiffio.h"
 
+
 class Converter : public QObject
 {
     Q_OBJECT
 
 private:
-	QThread *qimageThread;
-	QThread *cvMatThread;
 	QImage image;
+	cv::Mat mat;
 	int width;
 	int height;
 	int channels;
@@ -34,10 +35,12 @@ public:
 
 public slots:
 	void charToQImage(char *);
+	void charToCvMat(char *);
 	void blockToTIFFs();
 
 signals:
 	void newImage(QImage*);
+	void newMat(cv::Mat*);
 	void converting(int, int);	//recent image, total number of images
 };
 

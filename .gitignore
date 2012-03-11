@@ -7,6 +7,7 @@
 ipch/**/*
 *.obj
 /recorder/x64/**/*
+/recorder/x64/
 /recorder/Debug/**/*
 /recorder/GeneratedFiles/**/*
 /recorder/GeneratedFiles
