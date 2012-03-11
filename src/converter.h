@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QByteArray>
 #include <QVector>
+#include <QThread>
 #include <qimage.h>
 #include <QtGui/QApplication>
 #include <qdir.h>
@@ -16,6 +17,8 @@ class Converter : public QObject
     Q_OBJECT
 
 private:
+	QThread *qimageThread;
+	QThread *cvMatThread;
 	QImage image;
 	int width;
 	int height;

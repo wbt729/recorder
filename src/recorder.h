@@ -13,6 +13,7 @@
 #include <QErrorMessage>
 #include <qprogressdialog.h>
 #include <QMessageBox>
+#include "meanplot.h"
 
 class Recorder : public QMainWindow
 {
@@ -24,6 +25,7 @@ public:
 private:
 	QProgressDialog *progressDialog;
 	QEye *cam;
+	MeanPlot *plot;
 	ImageLabel *imageLabel;
 	QPushButton *recordButton;
 	QPushButton *stopButton;
@@ -32,6 +34,7 @@ private:
 	TiffConverter *conv;
 	bool record; //start triggered recording at startup
 	bool trigger; //use external trigger
+	virtual QSize sizeHint();
 private slots:
 	void doThings();
 	void onLabelMouseWheel(int);

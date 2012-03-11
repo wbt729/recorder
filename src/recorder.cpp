@@ -7,20 +7,23 @@ Recorder::Recorder(bool t, bool r, QWidget *parent, Qt::WFlags flags) {
 	QGridLayout *layout = new QGridLayout();
 	centralWidget->setLayout(layout);
 	setCentralWidget(centralWidget);
+	setMinimumSize(1000, 600);
 
+	plot = new MeanPlot();
 	cam = new QEye(this);
 	progressDialog = new QProgressDialog(this);
 	conv = new TiffConverter(this);
 	imageLabel = new ImageLabel(this);
 	imageLabel->setText(tr("bla"));
-	layout->addWidget(imageLabel);
+	layout->addWidget(imageLabel,0,0);
+	layout->addWidget(plot,0,1);
 	recordButton = new QPushButton("record");
 	recordButton->setCheckable(true);
 	//stopButton = new QPushButton("stop");
 	convertButton = new QPushButton("convert");
-	layout->addWidget(recordButton);
+	layout->addWidget(recordButton,1,0);
 	//layout->addWidget(stopButton);
-	layout->addWidget(convertButton);
+	layout->addWidget(convertButton,2,0);
 	connect(recordButton, SIGNAL(toggled(bool)), this, SLOT(onRecordButton(bool)));
 	//connect(recordButton, SIGNAL(clicked()), cam, SLOT(startRecording()));
 	//connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopRecording()));
@@ -38,6 +41,10 @@ Recorder::Recorder(bool t, bool r, QWidget *parent, Qt::WFlags flags) {
 }
 
 Recorder::~Recorder() {
+}
+
+QSize Recorder::sizeHint() {
+	return QSize(800, 600);
 }
 
 void Recorder::onRecordButton(bool checked) {
