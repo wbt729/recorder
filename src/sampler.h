@@ -5,6 +5,7 @@
 #include "opencv2/opencv.hpp"
 #include <qrect.h>
 #include <qdebug.h>
+#include <QTime>
 
 class Sampler : public QObject
 {
@@ -22,7 +23,12 @@ signals:
 	void newSamples(double, double, double);
 
 private:
-	
+	QTime *t;
+	QRect roi;
+	int roiArea;
+	QVector<QVector<double> > data;	
+	QVector<double> a; //filter coefficients
+	void filter();
 };
 
 #endif // SAMPLER_H

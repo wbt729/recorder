@@ -35,6 +35,7 @@ Recorder::Recorder(bool t, bool r, QWidget *parent, Qt::WFlags flags) {
 	//connect(convertButton, SIGNAL(clicked()), cam, SLOT(convertBlock()));
 	connect(convertButton, SIGNAL(clicked()), this, SLOT(onConvertButtonClicked()));
 	connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
+	connect(imageLabel, SIGNAL(newRoi(QRect)), sampler, SLOT(setRoi(QRect)));
 
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
 	connect(cam, SIGNAL(newMat(cv::Mat *)), sampler, SLOT(setMat(cv::Mat *)));

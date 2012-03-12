@@ -9,7 +9,7 @@ QEye::QEye(QObject *parent) {
 	bufferSize = 0;
 	running = false;
 	recording = false;
-	maxPreviewFreq = 15; //Hz;
+	maxPreviewFreq = 20; //Hz;
 	makePreview = true;
 	numImagesReceived = 0;
 	numImagesRecorded = 0;
