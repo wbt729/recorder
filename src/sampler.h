@@ -23,10 +23,9 @@ signals:
 	void newSamples(double, double, double);
 
 private:
-	QTime *t;
 	QRect roi;
 	int roiArea;
-	QVector<QVector<double> > data;	
+	QVector<double> data;	
 	QVector<double> a; //filter coefficients
 	void filter();
 };

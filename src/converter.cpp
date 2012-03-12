@@ -22,21 +22,21 @@ void Converter::charToCvMat(char *rawDat) {
 	//shift right by two to get 8 bit values
 	for(int i=0; i<height; i++) {
 		for(int j=0; j<width; j++) {
-			//qDebug() << i << j;
-			//qDebug() << samples[channels*(i*width+j)];
+			////qDebug() << i << j;
+			////qDebug() << samples[channels*(i*width+j)];
 			mat.at<unsigned short>(i, j*3) = samples[channels*(i*width+j)+2];
 			mat.at<unsigned short>(i, j*3+1) = samples[channels*(i*width+j)+1];
 			mat.at<unsigned short>(i, j*3+2) = samples[channels*(i*width+j)];
-			//mat.at<unsigned short>(i, j*3) = 0;
-			//mat.at<unsigned short>(i, j*3+1) = 10000;
-			//mat.at<unsigned short>(i, j*3+2) = 20000;
-			//qDebug() << mat.at<unsigned short>(i, j*3);
-			//mat.at<short>(i,j) = 0;
+			////mat.at<unsigned short>(i, j*3) = 0;
+			////mat.at<unsigned short>(i, j*3+1) = 10000;
+			////mat.at<unsigned short>(i, j*3+2) = 20000;
+			////qDebug() << mat.at<unsigned short>(i, j*3);
+			////mat.at<short>(i,j) = 0;
 		}
 	}
-	//mat = mat*64;
-	//cv::cvtColor(mat, mat, CV_8U);
-	//cv::imwrite("bla.png", mat);
+	////mat = mat*64;
+	////cv::cvtColor(mat, mat, CV_8U);
+	////cv::imwrite("bla.png", mat);
 	emit newMat(&mat);
 }
 
@@ -112,6 +112,8 @@ void Converter::setResolution(int w, int h, int c, int bps, int bpp) {
 
 
 void Converter::blockToTIFFs() {
+	int bla = 0;
+	int blubb = 5;
 
 
 

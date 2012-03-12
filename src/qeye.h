@@ -1,6 +1,7 @@
 #ifndef QEYE_H
 #define QEYE_H
 
+#include "opencv2/opencv.hpp"
 #include <QObject>
 #include <QDebug>
 #include <QImage>
@@ -11,6 +12,7 @@
 #include "storage.h"
 #include <qtimer.h>
 #include <converter.h>
+
 
 class QEye : public QObject {
 	Q_OBJECT

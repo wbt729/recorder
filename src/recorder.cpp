@@ -67,7 +67,7 @@ void Recorder::doThings() {
 		int camsFound = QEye::countFreeCams();
 		statusBar()->showMessage("Init failed");
 		QMessageBox noCamMsgBox(this);
-		noCamMsgBox.setText(tr("There are %1 uEye cameras on this network. No free camera could be found. Check if the camera is already opened somewhere else or check network connections. Then restart this program.").arg(camsFound));
+		noCamMsgBox.setText(tr("There are %1 uEye cameras on this network. No free camera could be found. Check if the camera is already opened somewhere else and check the network connections. Then restart this program.").arg(camsFound));
 		noCamMsgBox.exec();
 		recordButton->setDisabled(true);
 		//close();
