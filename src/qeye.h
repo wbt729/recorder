@@ -36,6 +36,7 @@ public:
 	int errorsReceived();
 	int imagesRecorded();
 	static int countFreeCams();
+	void makeCvMat(bool);
 
 private:
 	//QFile logFile;

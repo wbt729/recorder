@@ -1,6 +1,7 @@
 #include "recorder.h"
 
-Recorder::Recorder(bool t, bool r, QWidget *parent, Qt::WFlags flags) {
+Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
+	noPlot = n;
 	record = r;
 	trigger = t;
 	QWidget *centralWidget = new QWidget();
@@ -9,40 +10,45 @@ Recorder::Recorder(bool t, bool r, QWidget *parent, Qt::WFlags flags) {
 	setCentralWidget(centralWidget);
 	setMinimumSize(1000, 600);
 
-	sampler = new Sampler();
-	samplerThread = new QThread();
-	sampler->moveToThread(samplerThread);
-	samplerThread->start();
-
-	plot = new MeanPlot();
+	if(!noPlot) {
+		plot = new MeanPlot();
+		sampler = new Sampler();
+		samplerThread = new QThread();
+		sampler->moveToThread(samplerThread);
+		samplerThread->start();
+	}
+		
 	cam = new QEye(this);
 	progressDialog = new QProgressDialog(this);
 	conv = new TiffConverter(this);
 	imageLabel = new ImageLabel(this);
 	imageLabel->setText(tr("bla"));
 	layout->addWidget(imageLabel,0,0);
-	layout->addWidget(plot,0,1);
+
+	if(!noPlot)
+		layout->addWidget(plot,0,1);
+
 	recordButton = new QPushButton("record");
 	recordButton->setCheckable(true);
-	//stopButton = new QPushButton("stop");
 	convertButton = new QPushButton("convert");
 	layout->addWidget(recordButton,1,0);
-	//layout->addWidget(stopButton);
-	layout->addWidget(convertButton,2,0);
+	layout->addWidget(convertButton,2,0);	
+	
 	connect(recordButton, SIGNAL(toggled(bool)), this, SLOT(onRecordButton(bool)));
-	//connect(recordButton, SIGNAL(clicked()), cam, SLOT(startRecording()));
-	//connect(stopButton, SIGNAL(clicked()), cam, SLOT(stopRecording()));
-	//connect(convertButton, SIGNAL(clicked()), cam, SLOT(convertBlock()));
 	connect(convertButton, SIGNAL(clicked()), this, SLOT(onConvertButtonClicked()));
-	connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
-	connect(imageLabel, SIGNAL(newRoi(QRect)), sampler, SLOT(setRoi(QRect)));
-
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
-	connect(cam, SIGNAL(newMat(cv::Mat *)), sampler, SLOT(setMat(cv::Mat *)));
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
 	connect(cam, SIGNAL(newImage(QImage *)), this, SLOT(onNewImage()));
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	connect(cam, SIGNAL(countersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
+
+	if(!noPlot) {
+		connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
+		connect(cam, SIGNAL(newMat(cv::Mat *)), sampler, SLOT(setMat(cv::Mat *)));
+		connect(imageLabel, SIGNAL(newRoi(QRect)), sampler, SLOT(setRoi(QRect)));
+		cam->makeCvMat(true);
+	}
+
 	errors = 0;
 
 	QTimer::singleShot(.1, this, SLOT(doThings()));

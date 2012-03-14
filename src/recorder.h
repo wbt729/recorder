@@ -21,7 +21,7 @@ class Recorder : public QMainWindow
 	Q_OBJECT
 
 public:
-	Recorder(bool t = false, bool r = false, QWidget *parent = 0, Qt::WFlags flags = 0);
+	Recorder(bool t = false, bool r = false, bool n = false, QWidget *parent = 0, Qt::WFlags flags = 0);	//trigger, record, noPlot
 	~Recorder();
 private:
 	QThread *samplerThread;
@@ -37,6 +37,7 @@ private:
 	TiffConverter *conv;
 	bool record; //start triggered recording at startup
 	bool trigger; //use external trigger
+	bool noPlot;
 	virtual QSize sizeHint();
 private slots:
 	void doThings();

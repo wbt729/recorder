@@ -27,7 +27,6 @@ private:
 	int roiArea;
 	QVector<double> data;	
 	QVector<double> a; //filter coefficients
-	void filter();
 };
 
 #endif // SAMPLER_H

@@ -50,10 +50,18 @@ QEye::QEye(QObject *parent) {
 	connect(this, SIGNAL(starting()), grabber, SLOT(start()));
 	connect(this, SIGNAL(stopping()), grabber, SLOT(stop()));
 	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToQImage(char *)));
-	connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToCvMat(char *)));
+	//connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToCvMat(char *)));
 	connect(grabber, SIGNAL(errors(int)), this, SLOT(onErrors(int)));	//forward error signal
 	connect(grabber, SIGNAL(newFrame(char*)), this, SLOT(onNewFrame(char*)));
 }
+
+void QEye::makeCvMat(bool m) {
+	if(m)
+		connect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToCvMat(char *)));
+	else
+		disconnect(this, SIGNAL(newFrame(char *)), converter, SLOT(charToCvMat(char *)));
+}
+
 
 void QEye::onErrors(int e) {
 	numErrors += e;

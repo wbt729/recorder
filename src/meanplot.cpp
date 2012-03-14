@@ -1,8 +1,8 @@
 #include "meanplot.h"
 
 MeanPlot::MeanPlot() {
-	setTitle("Gemittelter Farbwert");
-//	int size=512;
+	setTitle("rPPG");
+	//int size=600;
 	int size=350;
 	for(int i=0;i<size;i++) {
 	    	d_x.append((double) i);
@@ -15,7 +15,7 @@ MeanPlot::MeanPlot() {
 	scaleEngine->setAttribute(QwtScaleEngine::Symmetric);
 //	scaleEngine->autoScale(200, d_y[0], d_y[99], d_x[0]);
 	setAxisScaleEngine(QwtPlot::yLeft, scaleEngine);
-	setAxisTitle(QwtPlot::xBottom,"Zeit in Frames");
+	setAxisTitle(QwtPlot::xBottom,"Zeit");
 	setAxisTitle(QwtPlot::yLeft,"Amplitude");
 
 	QPen pen;
@@ -49,7 +49,8 @@ void MeanPlot::updateData(double meanRed, double meanGreen, double meanBlue) {
 	d_y.append(meanGreen);
 
 //	std::cout << "mean rec: " << meanGreen << std::endl;
-	setAxisScale(QwtPlot::yLeft, meanGreen-8, meanGreen+8);
+	//setAxisScale(QwtPlot::yLeft, meanGreen-20, meanGreen+20);
+	setAxisScale(QwtPlot::yLeft, -4, +4);
 	//setAxisScale(QwtPlot::yLeft, 0, 1023);
 
 	replot();

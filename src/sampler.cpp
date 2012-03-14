@@ -5,13 +5,9 @@ Sampler::Sampler() {
 	roi = QRect();
 	roiArea = 1000000;
 	data = QVector<double>(bufferSize, 0);
-
-	a << -0.0039 <<  -0.0104 <<  -0.0099  <<  0.0075  <<  0.0308  <<  0.0273 <<  -0.0187 <<  -0.0649 <<  -0.0318  <<  0.1126  <<  0.2925  <<  0.3746  <<  0.2925
-    << 0.1126 <<  -0.0318 <<  -0.0649 <<  -0.0187  <<  0.0273  <<  0.0308  <<  0.0075 <<  -0.0099 <<  -0.0104 <<  -0.0039;
 }
 
 Sampler::~Sampler() {
-
 }
 
 void Sampler::setMat(cv::Mat *mat) {
@@ -20,8 +16,18 @@ void Sampler::setMat(cv::Mat *mat) {
 	double meanGreen = 0;
 	double meanRed = 0;
 	int steps = 0;
-	for(int y = roi.y(); y < roi.bottom()+1; y++) {
-		for(int x = roi.x(); x < roi.right()+1; x++) {
+
+	//set correct border of roi
+	if(roi.right() > buf.cols) roi.setRight(buf.cols);
+	if(roi.bottom() > buf.rows) roi.setBottom(buf.rows);
+	if(roi.left() < 0) roi.setLeft(0);
+	if(roi.top() < 0) roi.setTop(0);
+
+	roiArea = (roi.width()-1)*(roi.height()-1);
+
+
+	for(int y = roi.y(); (y < roi.bottom()); y++) {
+		for(int x = roi.x(); (x < roi.right()); x++) {
 			meanBlue += buf.at<unsigned short>(y, x*3);
 			meanGreen += buf.at<unsigned short>(y, x*3+1);
 			meanRed += buf.at<unsigned short>(y, x*3+2);
@@ -36,33 +42,39 @@ void Sampler::setMat(cv::Mat *mat) {
 
 	data.erase(data.begin());
 	data << meanGreen;
-	//qDebug() << meanGreen;
 
-	int length = 8;
+	int length = 4;
 	double tmp = 0;
 	for(int i=0; i<length; i++) {
 		tmp += data.at(data.size()-1-i);
 	}
+	
 	meanGreen = tmp/length;
-	//meanGreen = meanGreen - data.at
-	//filter();
+	data.replace(data.size()-1, meanGreen);
+
+	length = 15;
+	tmp = 0;
+	for(int i=0; i<length; i++) {
+		tmp += data.at(data.size()-1-i);
+	}
+
+	meanGreen -= tmp/length;
+
+	//tmp = tmp - data.at(data.size()-2);
+
+	
+	//meanGreen -= tmp/length;
+
+	//data.erase(data.begin());
+	//data << meanGreen;
 
 	emit newSamples(meanRed, meanGreen, meanBlue);
 }
 
 void Sampler::setRoi(QRect r) {
 	roi = r;
-	roiArea = roi.width()*roi.height();
 	qDebug() << roi.topLeft().x() << roi.topLeft().y();
 	qDebug() << roi.bottomRight().x() << roi.bottomRight().y();
-	qDebug() << roiArea;
+	//qDebug() << roiArea;
 	qDebug() << "new ROI";
-}
-
-void Sampler::filter() {
-	double tmp = 0;
-	for(int i=0; i<a.size(); i++) {
-		tmp += a.at(i)*data.at(data.size()-i-1);
-	}
-	data.replace(data.size()-1,tmp);
 }
