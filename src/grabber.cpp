@@ -8,6 +8,9 @@ Grabber::Grabber(HIDS *camera, QObject *parent) {
 	linBufIndex = 0;
 	useFirstLinBuf = true;
 	recording = false;
+	imagesRecorded = 0;
+	imagesReceived = 0;
+
 }
 
 Grabber::~Grabber() {
@@ -64,10 +67,12 @@ DWORD Grabber::waitForFrame() {
 }
 
 void Grabber::onNewFrame() {
+	imagesReceived += 1;
 	INT id = 0;
 	offset = (useFirstLinBuf ? 0 : sizeLinBuf*frameSize);
 	is_GetActSeqBuf(*cam, &id, &memAct, &memLast);
 	if(recording) {
+		imagesRecorded += 1;
 		is_CopyImageMem(*cam, memLast, NULL, &linBuf[offset+linBufIndex*frameSize]);
 		linBufIndex++;
 		if(linBufIndex >= sizeLinBuf) {

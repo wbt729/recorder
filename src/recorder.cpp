@@ -29,12 +29,13 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	imageLabel->setText(tr("bla"));
 	layout->addWidget(imageLabel,0,0);
 
-	if(!noPlot)
+	if(!noPlot) {
 		layout->addWidget(plot,0,1,1,2);
 		layout->addWidget(new QLabel("LP"),1,1);
 		layout->addWidget(new QLabel("HP"),1,2);
 		layout->addWidget(lpSpinBox, 2,1);
 		layout->addWidget(hpSpinBox, 2,2);
+	}
 
 	recordButton = new QPushButton("record");
 	recordButton->setCheckable(true);

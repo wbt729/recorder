@@ -31,7 +31,7 @@ private:
 	
 	INT sizeLinBuf;
 	bool running, recording, useFirstLinBuf;
-	int linBufIndex, offset, frameSize;
+	int linBufIndex, offset, frameSize, imagesReceived, imagesRecorded;
 	
 	int width, height, bytesPerPixel;
 
