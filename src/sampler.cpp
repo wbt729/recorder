@@ -43,14 +43,14 @@ void Sampler::setMat(cv::Mat *mat) {
 	data.erase(data.begin());
 	data << meanGreen;
 
-	int length = 5;
+	int length = 15;
 	double tmp = 0;
 	for(int i=0; i<length; i++) {
 		tmp += data.at(data.size()-1-i);
 	}
 	
 	meanGreen = tmp/length;
-	data.replace(data.size()-1, meanGreen);
+	//data.replace(data.size()-1, meanGreen);
 
 	//length = 10;
 	//tmp = 0;
@@ -58,7 +58,7 @@ void Sampler::setMat(cv::Mat *mat) {
 	//	tmp += data.at(data.size()-1-i);
 	//}
 
-	meanGreen -= tmp/length;
+	//meanGreen -= tmp/length;
 
 	//tmp = tmp - data.at(data.size()-2);
 

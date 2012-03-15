@@ -3,6 +3,7 @@
 MeanPlot::MeanPlot() {
 	scale = 10;
 	floating = false;
+	autoScale = false;
 	setTitle("rPPG");
 	//int size=600;
 	int size=350;
@@ -52,10 +53,14 @@ void MeanPlot::updateData(double meanRed, double meanGreen, double meanBlue) {
 
 //	std::cout << "mean rec: " << meanGreen << std::endl;
 	
-	if(floating)
-		setAxisScale(QwtPlot::yLeft, meanGreen-scale, meanGreen+scale);
+	if(!autoScale) {
+		if(floating)
+			setAxisScale(QwtPlot::yLeft, meanGreen-scale, meanGreen+scale);
+		else
+		setAxisScale(QwtPlot::yLeft, -scale, +scale);
+	}
 	else
-	setAxisScale(QwtPlot::yLeft, -scale, +scale);
+		updateAxes();
 	//setAxisScale(QwtPlot::yLeft, 0, 1023);
 
 	replot();
@@ -68,6 +73,15 @@ void MeanPlot::mouseDoubleClickEvent(QMouseEvent *event) {
 //zoom
 void MeanPlot::wheelEvent(QWheelEvent *event) {
 	int numDegrees = event->delta()/8;
-	scale -= numDegrees/15;
+	scale -= numDegrees/5;
 	scale = (scale < 1) ? 1 : scale;
+}
+
+void MeanPlot::mousePressEvent(QMouseEvent *event) {
+	if(event->button() == Qt::RightButton)
+		autoScale = !autoScale;
+	if(autoScale)
+		setAxisAutoScale(QwtPlot::yLeft, true);
+	else
+		setAxisAutoScale(QwtPlot::yLeft, false);
 }

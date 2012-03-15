@@ -15,7 +15,7 @@ public:
 	MeanPlot();
 	virtual ~MeanPlot();
 private:
-	bool floating;
+	bool floating, autoScale;
     QwtPlot *plot;
     QwtPlotDirectPainter *painter;
     QwtPlotCurve *curve;
@@ -30,6 +30,7 @@ public slots:
 	void updateData(double, double, double);
 protected:
 	virtual void mouseDoubleClickEvent(QMouseEvent *);
+	virtual void mousePressEvent(QMouseEvent *);
 	virtual void wheelEvent(QWheelEvent *);
 };
 
