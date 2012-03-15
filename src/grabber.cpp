@@ -82,8 +82,11 @@ void Grabber::onNewFrame() {
 
 void Grabber::checkForErrors() {
 	UEYE_CAPTURE_STATUS_INFO captureStatusInfo;
-	is_CaptureStatus(*cam, IS_CAPTURE_STATUS_INFO_CMD_GET, (void*) &captureStatusInfo, sizeof(captureStatusInfo));
-	if(captureStatusInfo.dwCapStatusCnt_Total) emit errors(captureStatusInfo.dwCapStatusCnt_Total);
+	is_CaptureStatus(*cam, IS_CAPTURE_STATUS_INFO_CMD_GET, (void*) &captureStatusInfo, sizeof(captureStatusInfo));		//get ueye api error counter
+	if(captureStatusInfo.dwCapStatusCnt_Total) {
+		emit errors(captureStatusInfo.dwCapStatusCnt_Total);
+		is_CaptureStatus(*cam, IS_CAPTURE_STATUS_INFO_CMD_RESET, NULL, 0);		//reset ueye api error counter
+	}
 }
 
 

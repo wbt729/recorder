@@ -246,7 +246,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(QTDIR)\lib\qtmaind.lib;$(QTDIR)\lib\QtGuid4.lib;$(QTDIR)\lib\QtCored4.lib;qwtd.lib;uEye_api_64.lib;libtiff.lib;opencv_core231.lib;opencv_highgui231.lib;opencv_imgproc231.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(QTDIR)\lib\qtmaind.lib;$(QTDIR)\lib\QtGuid4.lib;$(QTDIR)\lib\QtCored4.lib;qwtd.lib;uEye_api_64.lib;libtiff.lib;opencv_core231d.lib;opencv_highgui231d.lib;opencv_imgproc231d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\opencv\opencv\build\x64\vc10\lib;D:\work\tiff-4.0.1\libtiff;C:\Program Files\IDS\uEye\Develop\Lib;D:\work\qwt-6.0.1\lib;$(QTDIR)\lib;c:\temp\qt4.8.064bit\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>

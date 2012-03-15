@@ -1,6 +1,8 @@
 #include "meanplot.h"
 
 MeanPlot::MeanPlot() {
+	scale = 10;
+	floating = false;
 	setTitle("rPPG");
 	//int size=600;
 	int size=350;
@@ -49,9 +51,23 @@ void MeanPlot::updateData(double meanRed, double meanGreen, double meanBlue) {
 	d_y.append(meanGreen);
 
 //	std::cout << "mean rec: " << meanGreen << std::endl;
-	//setAxisScale(QwtPlot::yLeft, meanGreen-20, meanGreen+20);
-	setAxisScale(QwtPlot::yLeft, -4, +4);
+	
+	if(floating)
+		setAxisScale(QwtPlot::yLeft, meanGreen-scale, meanGreen+scale);
+	else
+	setAxisScale(QwtPlot::yLeft, -scale, +scale);
 	//setAxisScale(QwtPlot::yLeft, 0, 1023);
 
 	replot();
+}
+
+void MeanPlot::mouseDoubleClickEvent(QMouseEvent *event) {
+	floating = !floating;
+}
+
+//zoom
+void MeanPlot::wheelEvent(QWheelEvent *event) {
+	int numDegrees = event->delta()/8;
+	scale -= numDegrees/15;
+	scale = (scale < 1) ? 1 : scale;
 }
