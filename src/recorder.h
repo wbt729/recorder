@@ -15,6 +15,7 @@
 #include <QMessageBox>
 #include "meanplot.h"
 #include "sampler.h"
+#include <qspinbox.h>
 
 class Recorder : public QMainWindow
 {
@@ -24,6 +25,8 @@ public:
 	Recorder(bool t = false, bool r = false, bool n = false, QWidget *parent = 0, Qt::WFlags flags = 0);	//trigger, record, noPlot
 	~Recorder();
 private:
+	QSpinBox *hpSpinBox;
+	QSpinBox *lpSpinBox;
 	QThread *samplerThread;
 	QProgressDialog *progressDialog;
 	QEye *cam;

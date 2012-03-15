@@ -11,6 +11,10 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	setMinimumSize(1000, 600);
 
 	if(!noPlot) {
+		hpSpinBox = new QSpinBox();
+		lpSpinBox = new QSpinBox();
+		hpSpinBox->setRange(0, 100);
+		lpSpinBox->setRange(0, 100);
 		plot = new MeanPlot();
 		sampler = new Sampler();
 		samplerThread = new QThread();
@@ -26,7 +30,11 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	layout->addWidget(imageLabel,0,0);
 
 	if(!noPlot)
-		layout->addWidget(plot,0,1);
+		layout->addWidget(plot,0,1,1,2);
+		layout->addWidget(new QLabel("LP"),1,1);
+		layout->addWidget(new QLabel("HP"),1,2);
+		layout->addWidget(lpSpinBox, 2,1);
+		layout->addWidget(hpSpinBox, 2,2);
 
 	recordButton = new QPushButton("record");
 	recordButton->setCheckable(true);
@@ -43,6 +51,8 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	connect(cam, SIGNAL(countersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
 
 	if(!noPlot) {
+		connect(lpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setLP(int)));
+		connect(hpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setHP(int)));
 		connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
 		connect(cam, SIGNAL(newMat(cv::Mat *)), sampler, SLOT(setMat(cv::Mat *)));
 		connect(imageLabel, SIGNAL(newRoi(QRect)), sampler, SLOT(setRoi(QRect)));
@@ -108,7 +118,7 @@ void Recorder::closeEvent(QCloseEvent *event) {
 void Recorder::onLabelMouseWheel(int steps) {
 	double exp = 0;
 	exp = cam->getExposure();
-	cam->setExposure(exp + (double) steps/5);
+	cam->setExposure(exp + (double) steps/75);
 }
 
 void Recorder::onCountersChanged(int received, int recorded, int errors) {

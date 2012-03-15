@@ -5,6 +5,8 @@ Sampler::Sampler() {
 	roi = QRect();
 	roiArea = 1000000;
 	data = QVector<double>(bufferSize, 0);
+	lengthHighPass = 0;
+	lengthLowPass = 0;
 }
 
 Sampler::~Sampler() {
@@ -35,7 +37,6 @@ void Sampler::setMat(cv::Mat *mat) {
 		}
 	}
 
-	//qDebug() << steps << roiArea;
 	meanGreen = meanGreen/roiArea;
 	meanRed = meanRed/roiArea;
 	meanBlue = meanBlue/roiArea;
@@ -43,30 +44,22 @@ void Sampler::setMat(cv::Mat *mat) {
 	data.erase(data.begin());
 	data << meanGreen;
 
-	int length = 15;
 	double tmp = 0;
-	for(int i=0; i<length; i++) {
-		tmp += data.at(data.size()-1-i);
+
+	if(lengthLowPass != 0) {
+		for(int i=0; i<lengthLowPass; i++) {
+			tmp += data.at(data.size()-1-i);
+		}
+		meanGreen = tmp/lengthLowPass;
 	}
-	
-	meanGreen = tmp/length;
-	//data.replace(data.size()-1, meanGreen);
 
-	//length = 10;
-	//tmp = 0;
-	//for(int i=0; i<length; i++) {
-	//	tmp += data.at(data.size()-1-i);
-	//}
-
-	//meanGreen -= tmp/length;
-
-	//tmp = tmp - data.at(data.size()-2);
-
-	
-	//meanGreen -= tmp/length;
-
-	//data.erase(data.begin());
-	//data << meanGreen;
+	if(lengthHighPass != 0) {
+		tmp = 0;
+		for(int i=0; i<lengthHighPass; i++) {
+			tmp += data.at(data.size()-1-i);
+		}
+		meanGreen -= tmp/lengthHighPass;
+	}
 
 	emit newSamples(meanRed, meanGreen, meanBlue);
 }
@@ -77,4 +70,12 @@ void Sampler::setRoi(QRect r) {
 	qDebug() << roi.bottomRight().x() << roi.bottomRight().y();
 	//qDebug() << roiArea;
 	qDebug() << "new ROI";
+}
+
+void Sampler::setLP(int l) {
+	lengthLowPass = l;
+}
+
+void Sampler::setHP(int l) {
+	lengthHighPass = l;
 }

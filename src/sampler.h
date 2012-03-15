@@ -18,11 +18,14 @@ public:
 public slots:
 	void setMat(cv::Mat *);
 	void setRoi(QRect);
+	void setLP(int);
+	void setHP(int);
 
 signals:
 	void newSamples(double, double, double);
 
 private:
+	int lengthHighPass, lengthLowPass;
 	QRect roi;
 	int roiArea;
 	QVector<double> data;	
