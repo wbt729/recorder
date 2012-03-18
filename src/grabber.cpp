@@ -10,7 +10,7 @@ Grabber::Grabber(HIDS *camera, QObject *parent) {
 	recording = false;
 	imagesRecorded = 0;
 	imagesReceived = 0;
-
+	errorIndices.clear();
 }
 
 Grabber::~Grabber() {
@@ -45,8 +45,10 @@ void Grabber::grab() {
 		checkForErrors();
 		if(waitForFrame() == 0)
 			onNewFrame();
-		else
+		else {
 			emit errors(1);
+			errorIndices << imagesReceived;
+		}
 
 		QTimer::singleShot(0, this, SLOT(grab())); //set timer to call next grab
 		//qDebug() << "processing elapsed time:" << timer.elapsed() << "ms";
@@ -91,6 +93,7 @@ void Grabber::checkForErrors() {
 	if(captureStatusInfo.dwCapStatusCnt_Total) {
 		emit errors(captureStatusInfo.dwCapStatusCnt_Total);
 		is_CaptureStatus(*cam, IS_CAPTURE_STATUS_INFO_CMD_RESET, NULL, 0);		//reset ueye api error counter
+		errorIndices << imagesReceived;
 	}
 }
 
@@ -113,4 +116,15 @@ void Grabber::stop() {
 	running = false;
 	is_DisableEvent(*cam, IS_SET_EVENT_FRAME);
 	return;
+}
+
+void Grabber::saveErrorIndices() {
+	QFile file("d:\\work\\errors.txt");
+	if(file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		QTextStream out(&file);
+		for(int i=0; i<errorIndices.size(); i++) {
+			out << errorIndices.at(i) << "\n";
+		}
+		file.close();
+	}
 }

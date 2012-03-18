@@ -1,3 +1,8 @@
+//Qt C++ uEye capture and recording class
+
+//the actual state is confusing crap
+//a rewrite is very neccessary
+
 #ifndef QEYE_H
 #define QEYE_H
 
@@ -73,7 +78,6 @@ private:
 private slots:
 	void onConversionDone(QImage *);
 	void onPreviewTimer();
-
 public slots:
 	void startCapture();
 	void stopCapture();
@@ -89,7 +93,6 @@ signals:
 	void starting();
 	void stopping();
 	void errors(int);
-	//void newFrame(int, int, char *);
 	void newFrame(char *);
 	void linBufFull(char *, int);
 	void countersChanged(int, int, int); //images received, images recorded, errors

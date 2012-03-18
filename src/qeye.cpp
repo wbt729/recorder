@@ -238,6 +238,7 @@ int QEye::exit() {
 	converter->blockSignals(true);
 	storage->blockSignals(true);
 	//disconnect(this, SIGNAL(onNewFrame(int, char*)));
+	grabber->saveErrorIndices();
 	stopCapture();
 	grabberThread->quit();
 	storageThread->quit();

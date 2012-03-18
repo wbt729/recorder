@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QTime>
+#include <QFile>
 #include "uEye.h"
 //#include "process.h"
 
@@ -23,8 +24,10 @@ public slots:
 	void stop();
 	void startRecording();
 	void stopRecording();
+	void saveErrorIndices();
 
 private:
+	QVector<int> errorIndices;
 	char *memAct, *memLast, *linBuf;
 	INT id;
 	HIDS *cam;
