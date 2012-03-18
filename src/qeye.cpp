@@ -128,8 +128,9 @@ int QEye::init(QString fileName, int bufferSize, int id) {
 //all qt signal and slot connections go here
 void QEye::makeConnections() {
 	connect(grabber, SIGNAL(newFrame()), this, SLOT(onNewFrame()));
-	connect(this, SIGNAL(frameToConvert(char *)), converter, SLOT(charToQImage(char *)));
+	connect(this, SIGNAL(frameToConvert(char *)), converter, SLOT(makePreview(char *)));
 	connect(converter, SIGNAL(newImage(QImage *)), this, SIGNAL(newImage(QImage *)));
+	connect(converter, SIGNAL(newMat(cv::Mat *)), this, SIGNAL(newMat(cv::Mat *)));
 }
 
 //react to a new incoming frame

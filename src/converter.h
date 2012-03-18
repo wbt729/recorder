@@ -40,8 +40,8 @@ public:
 	void setResolution(int width, int height, int channels, int bitsPerChannel, int bytesPerPixel);
 
 public slots:
-	void charToQImage(char *);
-	void charToCvMat(char *);
+	void makePreview(char *);
+	//void charToCvMat(char *);
 	void blockToTIFFs();
 
 signals:

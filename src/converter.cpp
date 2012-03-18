@@ -14,26 +14,8 @@ Converter::Converter() {
 Converter::~Converter() {
 }
 
-void Converter::charToCvMat(char *rawDat) {
-	unsigned char *rawData = (unsigned char *) rawDat;
-	mat.create(height, width, CV_16UC3);
-	QVector<unsigned short> samples = readSamples(rawData);
-
-	//shift right by two to get 8 bit values
-	for(int i=0; i<height; i++) {
-		for(int j=0; j<width; j++) {
-			mat.at<unsigned short>(i, j*3) = samples[channels*(i*width+j)+2];
-			mat.at<unsigned short>(i, j*3+1) = samples[channels*(i*width+j)+1];
-			mat.at<unsigned short>(i, j*3+2) = samples[channels*(i*width+j)];
-		}
-	}
-	emit newMat(&mat);
-}
-
-
-
 //convert 10bit data to 8bit image for displaying
-void Converter::charToQImage(char *rawDat) {
+void Converter::makePreview(char *rawDat) {
 	if(!ready) 
 		return;
 	else {
@@ -41,8 +23,10 @@ void Converter::charToQImage(char *rawDat) {
 		QTimer::singleShot(1000/maxConversionRate, this, SLOT(onTimer()));
 	}
 
+	mat.create(height, width, CV_16UC3);
 
-	//convert to unsigned char since only bitshift ops on unsigned values fill with zeros
+	//convert to unsigned char since only bitshift ops on _unsigned_ 
+	//values fill with zeros
 	unsigned char *rawData = (unsigned char *) rawDat;
 
 	image = QImage(width, height, QImage::Format_RGB888);
@@ -52,12 +36,18 @@ void Converter::charToQImage(char *rawDat) {
 	//shift right by two to get 8 bit values
 	for(int i=0; i<height; i++) {
 		for(int j=0; j<width; j++) {
+			
 			image.setPixel(j,i,qRgb(samples[channels*(i*width+j)] >> 2,
 									samples[channels*(i*width+j)+1] >> 2,
 									samples[channels*(i*width+j)+2] >> 2));
+			
+			mat.at<unsigned short>(i, j*3) = samples[channels*(i*width+j)+2];
+			mat.at<unsigned short>(i, j*3+1) = samples[channels*(i*width+j)+1];
+			mat.at<unsigned short>(i, j*3+2) = samples[channels*(i*width+j)];
 		}
 	}
 	emit newImage(&image);
+	emit newMat(&mat);
 }
 
 //returns a vector of unsigned shorts that contains the samples with 10 bit precision

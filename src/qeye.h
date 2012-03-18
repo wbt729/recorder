@@ -65,6 +65,7 @@ signals:
 	void ready();
 	void frameToConvert(char *);
 	void newImage(QImage *);
+	void newMat(cv::Mat *);
 };
 
 #endif // QEYE_H
