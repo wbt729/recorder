@@ -1,12 +1,13 @@
 #include "converter.h"
 
-Converter::Converter(QObject *parent)
-    : QObject(parent) {
+Converter::Converter() {
+	maxConversionRate = 20;
 	width = 0;
 	height = 0;
 	channels = 0;
-	bitsPerSample = 0;
+	bitsPerChannel = 0;
 	bytesPerPixel = 0;
+	ready = true;
 }
 
 
@@ -33,6 +34,14 @@ void Converter::charToCvMat(char *rawDat) {
 
 //convert 10bit data to 8bit image for displaying
 void Converter::charToQImage(char *rawDat) {
+	if(!ready) 
+		return;
+	else {
+		ready = false;		//start conversion, block new conversion requests for 1/maxConversionRate seconds
+		QTimer::singleShot(1000/maxConversionRate, this, SLOT(onTimer()));
+	}
+
+
 	//convert to unsigned char since only bitshift ops on unsigned values fill with zeros
 	unsigned char *rawData = (unsigned char *) rawDat;
 
@@ -95,7 +104,7 @@ void Converter::setResolution(int w, int h, int c, int bps, int bpp) {
 	width = w;
 	height = h;
 	channels = c;
-	bitsPerSample = bps;
+	bitsPerChannel = bps;
 	bytesPerPixel = bpp;
 }
 
@@ -133,7 +142,7 @@ void Converter::blockToTIFFs() {
 		TIFFSetField(out, TIFFTAG_IMAGEWIDTH, width);
 		TIFFSetField(out, TIFFTAG_IMAGELENGTH, height);
 		TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, channels);
-		TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, bitsPerSample);
+		TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, bitsPerChannel);
 		TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 		TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
 
@@ -203,4 +212,8 @@ void Converter::blockToTIFFs() {
 	}
 	qDebug() << "Converter: done converting";
 	file.close();
+}
+
+void Converter::onTimer() {
+	ready = true;
 }

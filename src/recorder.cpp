@@ -22,7 +22,7 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 		samplerThread->start();
 	}
 		
-	cam = new QEye(this);
+	cam = new QEye();
 	progressDialog = new QProgressDialog(this);
 	conv = new TiffConverter(this);
 	imageLabel = new ImageLabel(this);
@@ -47,7 +47,7 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	connect(convertButton, SIGNAL(clicked()), this, SLOT(onConvertButtonClicked()));
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
-	connect(cam, SIGNAL(newImage(QImage *)), this, SLOT(onNewImage()));
+	//connect(cam, SIGNAL(newQImage(QImage *)), this, SLOT(onNewImage()));
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	connect(cam, SIGNAL(countersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
 
@@ -57,7 +57,7 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 		connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
 		connect(cam, SIGNAL(newMat(cv::Mat *)), sampler, SLOT(setMat(cv::Mat *)));
 		connect(imageLabel, SIGNAL(newRoi(QRect)), sampler, SLOT(setRoi(QRect)));
-		cam->makeCvMat(true);
+		//cam->makeCvMat(true);
 	}
 
 	errors = 0;
@@ -91,23 +91,24 @@ void Recorder::doThings() {
 		return;
 	}
 	else {
-		cam->loadParameters("d:\\work\\ueye.ini");
+		cam->startCapturing();
+//		cam->loadParameters("d:\\work\\ueye.ini");
 		//cam->setColorMode(IS_CM_RGB8_PACKED);
-		cam->setColorMode(IS_CM_RGB10V2_PACKED);
-		cam->createBuffers(400);
+		//cam->setColorMode(IS_CM_RGB10V2_PACKED);
+		//cam->createBuffers(400);
 		statusBar()->showMessage("Ready");
 
-		if(trigger) {
-			cam->setTrigger(true);
-		}
+		//if(trigger) {
+		//	cam->setTrigger(true);
+		//}
 
 		if(record) {
 			recordButton->setChecked(true);
 			cam->startRecording();
 		}
-		else {
-			cam->startCapture();
-		}
+		//else {
+		//	cam->startCapturing();
+		//}
 	}
 }
 
@@ -131,7 +132,7 @@ void Recorder::onConvertButtonClicked() {
 	progressDialog->setCancelButton(0);
 	progressDialog->setModal(true);
 	progressDialog->show();
-	cam->convertBlock();
+	//cam->convertBlock();
 }
 
 void Recorder::onConverting(int recent, int total) {

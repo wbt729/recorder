@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QByteArray>
 #include <QVector>
+#include <QTimer>
 #include <QThread>
 #include <qimage.h>
 #include <QtGui/QApplication>
@@ -19,19 +20,24 @@ class Converter : public QObject
     Q_OBJECT
 
 private:
+	int maxConversionRate;
+	bool ready; //this limits the converstion rate
 	QImage image;
 	cv::Mat mat;
 	int width;
 	int height;
 	int channels;
-	int bitsPerSample;
+	int bitsPerChannel;
 	int bytesPerPixel;
 	QVector<unsigned short> readSamples(unsigned char *);
 
+private slots:
+	void onTimer();
+
 public:
-    Converter(QObject *parent = 0);
+    Converter();
     ~Converter();
-	void setResolution(int, int, int, int, int);
+	void setResolution(int width, int height, int channels, int bitsPerChannel, int bytesPerPixel);
 
 public slots:
 	void charToQImage(char *);

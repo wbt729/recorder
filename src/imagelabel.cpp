@@ -12,6 +12,7 @@ ImageLabel::~ImageLabel() {
 }
 
 void ImageLabel::setImage(QImage *img) {
+	//qDebug() << "ImageLabel: set image";
 	scalingFactor = (double) width()/img->size().width();
 	//qDebug() << width() << img->size().width() << scalingFactor;
 	pixmap.convertFromImage(*img);
