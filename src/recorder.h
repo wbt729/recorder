@@ -25,6 +25,7 @@ public:
 	Recorder(bool t = false, bool r = false, bool n = false, QWidget *parent = 0, Qt::WFlags flags = 0);	//trigger, record, noPlot
 	~Recorder();
 private:
+	QThread *camThread;
 	QSpinBox *hpSpinBox;
 	QSpinBox *lpSpinBox;
 	QThread *samplerThread;

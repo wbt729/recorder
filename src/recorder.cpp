@@ -23,6 +23,9 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	}
 		
 	cam = new QEye();
+	camThread = new QThread();
+	cam->moveToThread(camThread);
+	camThread->start();
 	progressDialog = new QProgressDialog(this);
 	conv = new TiffConverter(this);
 	imageLabel = new ImageLabel(this);
@@ -109,8 +112,10 @@ void Recorder::doThings() {
 }
 
 void Recorder::closeEvent(QCloseEvent *event) {
+	blockSignals(true);
 	statusBar()->showMessage("Shutting down");
 	cam->exit();
+	qDebug("recorder: this is the end");
 }
 
 void Recorder::onLabelMouseWheel(int steps) {

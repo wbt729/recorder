@@ -25,7 +25,7 @@ class QEye : public QObject {
 public:
 	QEye();
 	~QEye();
-	int init(QString fileName = "d:\\work\\ueye.ini", int ringBufferSize = 200, int id = 0);
+	int init(QString fileName = "d:\\work\\ueye.ini", int ringBufferSize = 400, int linBufferSize = 100, int id = 0);
 	int exit();
 	int setExposure(double);
 	double getExposure();
@@ -51,8 +51,11 @@ private:
 	Converter *converter;
 	Grabber *grabber;
 	Storage *storage;
+	char *linBuffer;
+	bool useFirstLinBuffer;
+	int linBufferIndex;
 	int bytesPerPixel, bitsPerPixel, bitsPerChannel, colorChannels, width, height;
-	int sizeImage, sizeRingBuffer;	//image size in bytes, ring buffer size in elements (n*sizeImage)
+	int sizeFrame, sizeRingBuffer, sizeLinBuffer;	//image size in bytes, ring and lin buffer size in elements (n*sizeImage)
 	int imagesReceived;
 	int maxConversionRate;
 	bool recording, running;
@@ -66,6 +69,7 @@ signals:
 	void frameToConvert(char *);
 	void newImage(QImage *);
 	void newMat(cv::Mat *);
+	void linBufferFull(char *, int);
 };
 
 #endif // QEYE_H

@@ -6,6 +6,7 @@
 
 QEye::QEye() {
 	cam = NULL;
+	linBuffer = NULL;
 	bytesPerPixel = 0;
 	bitsPerPixel = 0;
 	bitsPerChannel = 0;
@@ -13,9 +14,12 @@ QEye::QEye() {
 	width = 0;
 	height = 0;
 	sizeRingBuffer = 0;
-	sizeImage = 0;
+	sizeLinBuffer = 0;
+	sizeFrame = 0;
 	recording = false;
 	running = false;
+	useFirstLinBuffer = true;
+	linBufferIndex = 0;
 	imagesReceived = 0;
 }
 
@@ -26,7 +30,6 @@ QEye::~QEye() {
 //since a half working image queue won't do any good
 int QEye::createRingBuffer(int size) {
 	sizeRingBuffer = size;
-	sizeImage = width*height*bytesPerPixel;
 	char *ringBufferCell;
 	INT cellId;
 	qDebug() << width << height << bitsPerPixel << size;
@@ -56,8 +59,11 @@ int QEye::createRingBuffer(int size) {
 //a better way might be to use a single software trigger here and then end
 //the grabber thread gracefully
 int QEye::exit() {
+	blockSignals(true);
 	is_StopLiveVideo(cam, IS_FORCE_VIDEO_STOP);
 	grabberThread->terminate();
+	converterThread->quit();
+	storageThread->quit();
 	is_ExitCamera(cam);
 	return 0;
 }
@@ -92,7 +98,7 @@ double QEye::getExposure() {
 
 //prepares the camera for capturing, break if any of the neccessary steps fail
 //the order of the following steps can not be changed, since they depend on one another
-int QEye::init(QString fileName, int bufferSize, int id) {
+int QEye::init(QString fileName, int ringBufferSize, int linBufferSize, int id) {
 	if(id != 0) cam |= id;
 	if(is_InitCamera(&cam, NULL) != IS_SUCCESS) {	//initialisation
 		qDebug("QEye: cannot init camera");
@@ -110,10 +116,13 @@ int QEye::init(QString fileName, int bufferSize, int id) {
 		qDebug() << "QEye: cannot set color mode";
 		return -1;
 	}
-	if(createRingBuffer(bufferSize) != IS_SUCCESS) {		//initialize ring buffer
+
+	if(createRingBuffer(ringBufferSize) != IS_SUCCESS) {		//initialize ring buffer
 		qDebug("QEye: cannot create ring buffer");
 		return -1;
 	}
+
+	sizeFrame = width*height*bytesPerPixel;
 
 	//setup helper objects and threads
 	grabber = new Grabber(&cam);
@@ -132,6 +141,13 @@ int QEye::init(QString fileName, int bufferSize, int id) {
 	storage->moveToThread(storageThread);
 	storageThread->start();
 
+	//reserve memory and setup linear buffer
+	//there are two linear buffers of the same size
+	//that get filled and written to the disk alternately
+	sizeLinBuffer = linBufferSize;
+	linBuffer = new char[2*sizeFrame*sizeLinBuffer];
+	useFirstLinBuffer = true;
+
 	//setup communication through qt signal and slots
 	makeConnections();
 
@@ -144,6 +160,7 @@ void QEye::makeConnections() {
 	connect(this, SIGNAL(frameToConvert(char *)), converter, SLOT(makePreview(char *)));
 	connect(converter, SIGNAL(newImage(QImage *)), this, SIGNAL(newImage(QImage *)));
 	connect(converter, SIGNAL(newMat(cv::Mat *)), this, SIGNAL(newMat(cv::Mat *)));
+	connect(this, SIGNAL(linBufferFull(char *, int)), storage, SLOT(saveBuffer(char *, int)));
 }
 
 //react to a new incoming frame
@@ -153,12 +170,23 @@ void QEye::onNewFrame() {
 	INT id;
 	char *thisFrame, *lastFrame;
 	if(is_GetActSeqBuf(cam, &id, &thisFrame, &lastFrame) == IS_SUCCESS) {
-		//memcpy
+		if(recording) {
+			int offset = (useFirstLinBuffer ? 0 : sizeLinBuffer*sizeFrame);		//offset to first or second linear buffer
+			is_CopyImageMem(cam, lastFrame, NULL, &linBuffer[offset+linBufferIndex*sizeFrame]);
+			linBufferIndex++;
+			if(linBufferIndex >= sizeLinBuffer) {
+				emit linBufferFull(&linBuffer[offset], sizeFrame*sizeLinBuffer);
+				linBufferIndex = 0;
+				useFirstLinBuffer = !useFirstLinBuffer;
+			}
+		}
+
 		is_UnlockSeqBuf(cam, NULL, lastFrame);
 		emit frameToConvert(lastFrame);
 	}
 	else {
 		qDebug() << "QEye: panic, could not get ring buffer id";
+		throw "QEye: panic, could not get ring buffer id";
 	}
 }
 
@@ -226,10 +254,12 @@ int QEye::stopCapturing() {
 }
 
 int QEye::startRecording() {
+	recording = 1;
 	return 0;
 }
 
 int QEye::stopRecording() {
+	recording = 0;
 	return 0;
 }
 
