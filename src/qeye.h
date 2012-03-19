@@ -39,6 +39,7 @@ public slots:
 	int stopCapturing();
 	int startRecording();
 	int stopRecording();
+	int setExternalTrigger(bool);
 
 private:
 	void makeConnections();

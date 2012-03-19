@@ -92,15 +92,11 @@ void Recorder::doThings() {
 	}
 	else {
 		cam->startCapturing();
-//		cam->loadParameters("d:\\work\\ueye.ini");
-		//cam->setColorMode(IS_CM_RGB8_PACKED);
-		//cam->setColorMode(IS_CM_RGB10V2_PACKED);
-		//cam->createBuffers(400);
 		statusBar()->showMessage("Ready");
 
-		//if(trigger) {
-		//	cam->setTrigger(true);
-		//}
+		if(trigger) {
+			cam->setExternalTrigger(true);
+		}
 
 		if(record) {
 			recordButton->setChecked(true);

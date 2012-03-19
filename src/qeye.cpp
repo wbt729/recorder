@@ -181,6 +181,13 @@ int QEye::setExposure(double exp) {
 	return (int) retVal;
 }
 
+//choose trigger mode between hard- and software trigger
+int QEye::setExternalTrigger(bool external) {
+	if(external) return (int) is_SetExternalTrigger(cam, IS_SET_TRIGGER_LO_HI);
+	else return (int) is_SetExternalTrigger(cam, IS_SET_TRIGGER_SOFTWARE);
+}
+
+
 //get number of cameras in network without having to connect
 int QEye::countFreeCams() {
 	INT ret;

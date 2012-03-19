@@ -63,9 +63,10 @@ QVector<unsigned short> Converter::readSamples(unsigned char *rawData) {
 			r = 0; g = 0; b = 0;
 			//bitwise magic
 			//copies two bytes to short value in reverse order
-			//10 bit value by masking the bits that are not
+			//due to endianess
+			//10 bit value is determined by masking the bits that are not
 			//part of the color channel and shifting the
-			//remaining bits, that 10 significant bits remain
+			//remaining bits, so that 10 significant bits remain
 			r = r | (rawData[offset+3] << 8);
 			r = r | rawData[offset+2];
 			r = (r & 0x3ff0) >> 4; //10 bit
