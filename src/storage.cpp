@@ -7,7 +7,7 @@ Storage::Storage(QObject *parent) {
 Storage::~Storage() {
 }
 
-void Storage::saveLinBuf(char *buf, int length) {
+void Storage::saveBuffer(char *buf, int length) {
 	QTime timer;
 	timer.start();
 	qDebug() << "open file" << file.open(QIODevice::WriteOnly | QIODevice::Append);

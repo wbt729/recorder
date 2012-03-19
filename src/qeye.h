@@ -50,14 +50,13 @@ private:
 	HIDS cam;
 	Converter *converter;
 	Grabber *grabber;
+	Storage *storage;
 	int bytesPerPixel, bitsPerPixel, bitsPerChannel, colorChannels, width, height;
-	int sizeRingBuffer;	//in elements
-	int sizeImage;	//in bytes
+	int sizeImage, sizeRingBuffer;	//image size in bytes, ring buffer size in elements (n*sizeImage)
 	int imagesReceived;
 	int maxConversionRate;
 	bool recording, running;
-	QThread *grabberThread;
-	QThread *converterThread;
+	QThread *grabberThread, *storageThread, *converterThread;
 
 private slots:
 	void onNewFrame();

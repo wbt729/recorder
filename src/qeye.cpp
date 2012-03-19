@@ -31,10 +31,12 @@ int QEye::createRingBuffer(int size) {
 	INT cellId;
 	qDebug() << width << height << bitsPerPixel << size;
 	for(int i=0; i < sizeRingBuffer; i++) {
+		//allocate memory for one single cell of the ring buffer
 		if(is_AllocImageMem(cam, width, height, bitsPerPixel, &ringBufferCell, &cellId) != IS_SUCCESS) {
 			qDebug("QEye: cannot allocate ring buffer memory, no image queue created");
 			return -1;
 		}
+		//add the newly allocated memory to the ring buffer sequence
 		if(is_AddToSequence(cam, ringBufferCell, cellId)) {
 			qDebug("QEye: cannot add memory to ring buffer, no image queue created");
 			return -1;
@@ -47,6 +49,12 @@ int QEye::createRingBuffer(int size) {
 	return 0;
 }
 
+//deinitializes the camera
+//the grabber thread has to be slaughtered cruelly since
+//in the externally triggered mode it gets stuck waiting for the next image
+//this is probably not a good way to do this
+//a better way might be to use a single software trigger here and then end
+//the grabber thread gracefully
 int QEye::exit() {
 	is_StopLiveVideo(cam, IS_FORCE_VIDEO_STOP);
 	grabberThread->terminate();
@@ -119,6 +127,11 @@ int QEye::init(QString fileName, int bufferSize, int id) {
 	converter->moveToThread(converterThread);
 	converterThread->start();
 
+	storage = new Storage();
+	storageThread = new QThread();
+	storage->moveToThread(storageThread);
+	storageThread->start();
+
 	//setup communication through qt signal and slots
 	makeConnections();
 
@@ -172,6 +185,10 @@ int QEye::setColorMode(INT mode) {
 	}
 }
 
+//sets exposure, doesn't check yet, if the new value exeeds the 
+//maximum exposure for the selected frame rate
+//note that the max exposure in external trigger mode is about
+// 2/3 of the max frame rate in freerun (software trigger) mode
 int QEye::setExposure(double exp) {
 	if(exp < 0) {
 		qDebug("QEye: cannot set negative exposure");

@@ -17,7 +17,7 @@ public:
 private:
 	QFile file;
 public slots:
-	void saveLinBuf(char *, int);
+	void saveBuffer(char *, int);
 };
 
 #endif // STORAGE_H
