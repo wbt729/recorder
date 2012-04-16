@@ -25,7 +25,7 @@ class QEye : public QObject {
 public:
 	QEye();
 	~QEye();
-	int init(QString fileName = "d:\\work\\ueye.ini", int ringBufferSize = 400, int linBufferSize = 100, int id = 0);
+	int init(QString fileName = "/cam/set1", int ringBufferSize = 400, int linBufferSize = 100, int id = 0);
 	int exit();
 	int setExposure(double);
 	double getExposure();

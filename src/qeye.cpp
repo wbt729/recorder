@@ -105,7 +105,8 @@ int QEye::init(QString fileName, int ringBufferSize, int linBufferSize, int id) 
 		return -1;
 	}
 	if(is_LoadParameters(cam, fileName.toLatin1()) != IS_SUCCESS) {	//load parameters from settings file
-		qDebug("QEye: cannot load parameters");
+		qDebug("QEye: cannot load parameters");						//function depreciated by IDS, should be replaced
+		qDebug() << fileName.toLatin1();
 		return -1;
 	}
 	if(getWidth() == -1 || getHeight() == -1) {		//get geometrical resolution
