@@ -7,6 +7,8 @@ Storage::Storage(QObject *parent) {
 Storage::~Storage() {
 }
 
+//appends a buffer to a dump file, this needs error checking since
+//we won't know, when we are lose frames
 void Storage::saveBuffer(char *buf, int length) {
 	QTime timer;
 	timer.start();
