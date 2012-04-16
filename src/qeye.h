@@ -31,7 +31,8 @@ public:
 	double getExposure();
 	void enableQImageConversion(bool enable = true);
 	void enableCVMatConversion(bool enable = true);
-	int setColorMode(INT mode);
+	int setColorMode();
+	int getColorMode();
 	static int countFreeCams();
 
 public slots:

@@ -113,8 +113,12 @@ int QEye::init(QString fileName, int ringBufferSize, int linBufferSize, int id) 
 		qDebug("QEye: cannot get image dimensions");
 		return -1;
 	}
-	if(setColorMode(IS_CM_BGR10V2_PACKED) != IS_SUCCESS) {	//set 10 bit color mode
-		qDebug() << "QEye: cannot set color mode";
+	//if(setColorMode() != IS_SUCCESS) {	//set 10 bit color mode
+	//	qDebug() << "QEye: cannot set color mode";
+	//	return -1;
+	//}
+	if(getColorMode() != IS_SUCCESS) {
+		qDebug() << "QEye: cannot get color mode";
 		return -1;
 	}
 
@@ -164,6 +168,27 @@ void QEye::makeConnections() {
 	connect(this, SIGNAL(linBufferFull(char *, int)), storage, SLOT(saveBuffer(char *, int)));
 }
 
+int QEye::getColorMode() {
+	int ret = is_SetColorMode(cam, IS_GET_COLOR_MODE);
+	switch(ret) {
+		case IS_CM_RGB10V2_PACKED:
+			bitsPerChannel = 10;
+			bitsPerPixel = 32;		//3*10bits + 2 padding bits
+			bytesPerPixel = 4;
+			colorChannels = 3;
+			return 0;
+		case IS_CM_MONO8:
+			bitsPerChannel = 8;
+			bitsPerPixel = 8;
+			bytesPerPixel = 1;
+			colorChannels = 1;
+			return 0;
+		default:
+			return -1;
+	}
+	return 0;
+}
+
 //react to a new incoming frame
 //copy to linear buffer, flush linear buffer is full
 //and convert image for preview
@@ -192,26 +217,28 @@ void QEye::onNewFrame() {
 }
 
 
-//set color mode, at the moment only 10 bit rgb is supported
-int QEye::setColorMode(INT mode) {
-	INT ret;
-	if(mode == IS_CM_BGR10V2_PACKED) {
-		ret = is_SetColorMode(cam, IS_CM_BGR10V2_PACKED);
-		qDebug() << ret;
-		if(ret == IS_SUCCESS) {
-				bitsPerChannel = 10;
-				bitsPerPixel = 32;		//3*10bits + 2 padding bits
-				bytesPerPixel = 4;
-				colorChannels = 3;
-				return 0;
-		}
-		else
-			return -1;
-	}
-	else {
-		qDebug() << "QEye:: color mode not supported";
-		return -1;
-	}
+//set color mode
+//automatically select best mode for this camera
+int QEye::setColorMode() {
+	//int ret;
+	//if(mode == is_cm_bgr10v2_packed) {
+	//	ret = is_setcolormode(cam, is_cm_bgr10v2_packed);
+	//	qdebug() << ret;
+	//	if(ret == is_success) {
+	//			bitsperchannel = 10;
+	//			bitsperpixel = 32;		//3*10bits + 2 padding bits
+	//			bytesperpixel = 4;
+	//			colorchannels = 3;
+	//			return 0;
+	//	}
+	//	else
+	//		return -1;
+	//}
+	//else {
+	//	qdebug() << "qeye:: color mode not supported";
+	//	return -1;
+	//}
+	return 0;
 }
 
 //sets exposure, doesn't check yet, if the new value exeeds the 
