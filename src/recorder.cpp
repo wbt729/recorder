@@ -121,7 +121,7 @@ void Recorder::closeEvent(QCloseEvent *event) {
 void Recorder::onLabelMouseWheel(int steps) {
 	double exp = 0;
 	exp = cam->getExposure();
-	cam->setExposure(exp + (double) steps/75);
+	cam->setExposure(exp + (double) steps/10);
 }
 
 void Recorder::onCountersChanged(int received, int recorded, int errors) {
