@@ -99,8 +99,10 @@ int QEye::getWidth() {
 
 double QEye::getExposure() {
 	double exposure;
-	if (is_Exposure(cam, IS_EXPOSURE_CMD_GET_EXPOSURE, (void*)&exposure, sizeof(exposure)) == IS_SUCCESS)
+	if (is_Exposure(cam, IS_EXPOSURE_CMD_GET_EXPOSURE, (void*)&exposure, sizeof(exposure)) == IS_SUCCESS) {
+		qDebug() << "QEye: exposure" << exposure;
 		return exposure;
+	}
 	else
 		return -1;
 }
@@ -260,6 +262,7 @@ int QEye::setExposure(double exp) {
 		return -1;
 	}
 	INT retVal = is_Exposure(cam, IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&exp, sizeof(exp));
+	getExposure();
 	return (int) retVal;
 }
 
