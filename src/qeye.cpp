@@ -21,6 +21,10 @@ QEye::QEye() {
 	useFirstLinBuffer = true;
 	linBufferIndex = 0;
 	imagesReceived = 0;
+
+	storageThread = new QThread();
+	grabberThread = new QThread();
+	converterThread = new QThread();
 }
 
 QEye::~QEye() {
@@ -61,9 +65,14 @@ int QEye::createRingBuffer(int size) {
 int QEye::exit() {
 	blockSignals(true);
 	is_StopLiveVideo(cam, IS_FORCE_VIDEO_STOP);
-	grabberThread->terminate();
-	converterThread->quit();
-	storageThread->quit();
+	if(grabberThread->isRunning()) {
+		qDebug() << "QEye: terminate grabber thread";
+		grabberThread->terminate();
+	}
+	if(converterThread->isRunning())
+		converterThread->quit();
+	if(storageThread->isRunning())
+		storageThread->quit();
 	is_ExitCamera(cam);
 	return 0;
 }
@@ -131,18 +140,18 @@ int QEye::init(QString fileName, int ringBufferSize, int linBufferSize, int id) 
 
 	//setup helper objects and threads
 	grabber = new Grabber(&cam);
-	grabberThread = new QThread();
+	//grabberThread = new QThread();
 	grabber->moveToThread(grabberThread);
 	grabberThread->start();
 
 	converter = new Converter();
 	converter->setResolution(width, height, colorChannels, bitsPerChannel, bytesPerPixel);
-	converterThread = new QThread();
+	//converterThread = new QThread();
 	converter->moveToThread(converterThread);
 	converterThread->start();
 
 	storage = new Storage();
-	storageThread = new QThread();
+	//storageThread = new QThread();
 	storage->moveToThread(storageThread);
 	storageThread->start();
 
@@ -171,7 +180,7 @@ void QEye::makeConnections() {
 int QEye::getColorMode() {
 	int ret = is_SetColorMode(cam, IS_GET_COLOR_MODE);
 	switch(ret) {
-		case IS_CM_RGB10V2_PACKED:
+		case IS_SET_CM_RGB30:
 			bitsPerChannel = 10;
 			bitsPerPixel = 32;		//3*10bits + 2 padding bits
 			bytesPerPixel = 4;
