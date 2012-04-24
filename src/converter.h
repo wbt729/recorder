@@ -22,6 +22,7 @@ class Converter : public QObject
 private:
 	int maxConversionRate;
 	bool ready; //this limits the converstion rate
+	bool convert;
 	QImage image;
 	cv::Mat mat;
 	int width;
