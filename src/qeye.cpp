@@ -2,9 +2,16 @@
 //meaning the resolution and color mode cannot be changed at runtime, the only parameter that can be
 //modified for now is the exposure time
 
+//TODO
+//get and save time stamps
+//log errors
+//add block conversion for 8bit grayvalue images
+//delete dump file at start of recording or even better create new dump file in designated dump file place
+
 #include "qeye.h"
 
 QEye::QEye() {
+	qRegisterMetaType<ULongLongVector>("ULongLongVector");
 	cam = NULL;
 	linBuffer = NULL;
 	bytesPerPixel = 0;
@@ -15,12 +22,14 @@ QEye::QEye() {
 	height = 0;
 	sizeRingBuffer = 0;
 	sizeLinBuffer = 0;
-	sizeFrame = 0;
+	bytesPerFrame = 0;
 	recording = false;
 	running = false;
 	useFirstLinBuffer = true;
 	linBufferIndex = 0;
-	imagesReceived = 0;
+	numImagesReceived = 0;
+	numImagesRecorded = 0;
+	numErrors = 0;
 
 	storageThread = new QThread();
 	grabberThread = new QThread();
@@ -28,6 +37,11 @@ QEye::QEye() {
 }
 
 QEye::~QEye() {
+}
+
+int QEye::convertBlock() {
+	converter->blockToTIFFs();
+	return 0;
 }
 
 //prepare the ring buffer from the uEye API, break if anything goes wrong
@@ -124,10 +138,6 @@ int QEye::init(QString fileName, int ringBufferSize, int linBufferSize, int id) 
 		qDebug("QEye: cannot get image dimensions");
 		return -1;
 	}
-	//if(setColorMode() != IS_SUCCESS) {	//set 10 bit color mode
-	//	qDebug() << "QEye: cannot set color mode";
-	//	return -1;
-	//}
 	if(getColorMode() != IS_SUCCESS) {
 		qDebug() << "QEye: cannot get color mode";
 		return -1;
@@ -138,22 +148,19 @@ int QEye::init(QString fileName, int ringBufferSize, int linBufferSize, int id) 
 		return -1;
 	}
 
-	sizeFrame = width*height*bytesPerPixel;
+	bytesPerFrame = width*height*bytesPerPixel;
 
 	//setup helper objects and threads
 	grabber = new Grabber(&cam);
-	//grabberThread = new QThread();
 	grabber->moveToThread(grabberThread);
 	grabberThread->start();
 
 	converter = new Converter();
 	converter->setResolution(width, height, colorChannels, bitsPerChannel, bytesPerPixel);
-	//converterThread = new QThread();
 	converter->moveToThread(converterThread);
 	converterThread->start();
 
 	storage = new Storage();
-	//storageThread = new QThread();
 	storage->moveToThread(storageThread);
 	storageThread->start();
 
@@ -161,8 +168,10 @@ int QEye::init(QString fileName, int ringBufferSize, int linBufferSize, int id) 
 	//there are two linear buffers of the same size
 	//that get filled and written to the disk alternately
 	sizeLinBuffer = linBufferSize;
-	linBuffer = new char[2*sizeFrame*sizeLinBuffer];
+	linBuffer = new char[2*bytesPerFrame*sizeLinBuffer];
 	useFirstLinBuffer = true;
+	//timestamps = QVector<int>(sizeLinBuffer, 0);
+	timestamps = ULongLongVector(sizeLinBuffer, 0);
 
 	//setup communication through qt signal and slots
 	makeConnections();
@@ -176,7 +185,7 @@ void QEye::makeConnections() {
 	connect(this, SIGNAL(frameToConvert(char *)), converter, SLOT(makePreview(char *)));
 	connect(converter, SIGNAL(newImage(QImage *)), this, SIGNAL(newImage(QImage *)));
 	connect(converter, SIGNAL(newMat(cv::Mat *)), this, SIGNAL(newMat(cv::Mat *)));
-	connect(this, SIGNAL(linBufferFull(char *, int)), storage, SLOT(saveBuffer(char *, int)));
+	connect(this, SIGNAL(linBufferFull(char *, int, int, ULongLongVector)), storage, SLOT(saveBuffer(char *, int, int, ULongLongVector)));
 }
 
 int QEye::getColorMode() {
@@ -208,18 +217,32 @@ void QEye::onNewFrame() {
 	char *thisFrame, *lastFrame;
 	if(is_GetActSeqBuf(cam, &id, &thisFrame, &lastFrame) == IS_SUCCESS) {
 		if(recording) {
-			int offset = (useFirstLinBuffer ? 0 : sizeLinBuffer*sizeFrame);		//offset to first or second linear buffer
-			is_CopyImageMem(cam, lastFrame, NULL, &linBuffer[offset+linBufferIndex*sizeFrame]);
+			//get image info of the previous image (therefore id-1) to get the timestamp
+			UEYEIMAGEINFO imageInfo;
+			INT ret = is_GetImageInfo(cam, id-1, &imageInfo, sizeof(imageInfo)); 
+			if(ret == IS_SUCCESS) {
+				unsigned long long u64Timestamp= imageInfo.u64TimestampDevice;
+				qDebug() << u64Timestamp;
+				timestamps.replace(linBufferIndex, u64Timestamp);
+			}
+			else
+				timestamps.replace(linBufferIndex, -1);
+			int offset = (useFirstLinBuffer ? 0 : sizeLinBuffer*bytesPerFrame);		//offset to first or second linear buffer
+			is_CopyImageMem(cam, lastFrame, NULL, &linBuffer[offset+linBufferIndex*bytesPerFrame]);
 			linBufferIndex++;
 			if(linBufferIndex >= sizeLinBuffer) {
-				emit linBufferFull(&linBuffer[offset], sizeFrame*sizeLinBuffer);
+				emit linBufferFull(&linBuffer[offset], bytesPerFrame, sizeLinBuffer, timestamps);
 				linBufferIndex = 0;
 				useFirstLinBuffer = !useFirstLinBuffer;
+				timestamps.fill(0);
 			}
 		}
-
 		is_UnlockSeqBuf(cam, NULL, lastFrame);
 		emit frameToConvert(lastFrame);
+		numImagesReceived += 1;
+		if(recording)
+			numImagesRecorded += 1;
+		emit transferCountersChanged(numImagesReceived, numErrors, numImagesRecorded);
 	}
 	else {
 		qDebug() << "QEye: panic, could not get ring buffer id";
@@ -301,4 +324,8 @@ int QEye::startRecording() {
 int QEye::stopRecording() {
 	recording = 0;
 	return 0;
+}
+
+void QEye::onErrors(int e) {
+	numErrors += e;
 }

@@ -52,7 +52,7 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
 	//connect(cam, SIGNAL(newQImage(QImage *)), this, SLOT(onNewImage()));
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
-	connect(cam, SIGNAL(countersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
+	connect(cam, SIGNAL(transferCountersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
 
 	if(!noPlot) {
 		connect(lpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setLP(int)));
@@ -125,18 +125,18 @@ void Recorder::onLabelMouseWheel(int steps) {
 }
 
 void Recorder::onCountersChanged(int received, int recorded, int errors) {
-	statusBar()->showMessage(tr("Images Received: %1, Images Recorded: %2, Errors: %3").arg(received).arg(recorded).arg(errors));
+	statusBar()->showMessage(tr("Images Received: %1, Errors: %2, Images Recorded: %3").arg(received).arg(recorded).arg(errors));
 }
 
 void Recorder::onConvertButtonClicked() {
-	connect(cam, SIGNAL(converting(int, int)), this, SLOT(onConverting(int, int)));
+	connect(cam, SIGNAL(convertingBlock(int, int)), this, SLOT(onConvertingBlock(int, int)));
 	progressDialog->setCancelButton(0);
 	progressDialog->setModal(true);
 	progressDialog->show();
-	//cam->convertBlock();
+	cam->convertBlock();
 }
 
-void Recorder::onConverting(int recent, int total) {
+void Recorder::onConvertingBlock(int recent, int total) {
 	progressDialog->setMaximum(total);
 	progressDialog->setValue(recent);
 	if(recent == total)

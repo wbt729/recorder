@@ -48,7 +48,7 @@ public slots:
 signals:
 	void newImage(QImage*);
 	void newMat(cv::Mat*);
-	void converting(int, int);	//recent image, total number of images
+	void convertingBlock(int, int);	//recent image, total number of images
 };
 
 #endif // CONVERTER_H

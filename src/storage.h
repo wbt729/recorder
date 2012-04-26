@@ -7,6 +7,8 @@
 #include <QTime>
 #include <qfile.h>
 
+typedef QVector<unsigned long long> ULongLongVector;
+
 class Storage : public QObject {
 	Q_OBJECT
 
@@ -16,8 +18,9 @@ public:
 
 private:
 	QFile file;
+	bool first;
 public slots:
-	void saveBuffer(char *, int);
+	void saveBuffer(char *, int, int, ULongLongVector);
 };
 
 #endif // STORAGE_H

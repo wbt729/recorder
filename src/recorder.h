@@ -48,7 +48,7 @@ private slots:
 	void onLabelMouseWheel(int);
 	void onCountersChanged(int, int, int);
 	void onConvertButtonClicked();
-	void onConverting(int, int);
+	void onConvertingBlock(int, int);
 	void onRecordButton(bool);
 protected:
 	virtual void closeEvent(QCloseEvent *);
