@@ -18,6 +18,7 @@ QEye::QEye() {
 	bitsPerPixel = 0;
 	bitsPerChannel = 0;
 	colorChannels = 0;
+	colorMode = 0;
 	width = 0;
 	height = 0;
 	sizeRingBuffer = 0;
@@ -190,6 +191,7 @@ void QEye::makeConnections() {
 
 int QEye::getColorMode() {
 	int ret = is_SetColorMode(cam, IS_GET_COLOR_MODE);
+	colorMode = ret;
 	switch(ret) {
 		case IS_SET_CM_RGB30:
 			bitsPerChannel = 10;
@@ -222,7 +224,7 @@ void QEye::onNewFrame() {
 			INT ret = is_GetImageInfo(cam, id-1, &imageInfo, sizeof(imageInfo)); 
 			if(ret == IS_SUCCESS) {
 				unsigned long long u64Timestamp= imageInfo.u64TimestampDevice;
-				qDebug() << u64Timestamp;
+				//qDebug() << u64Timestamp;
 				timestamps.replace(linBufferIndex, u64Timestamp);
 			}
 			else
@@ -317,6 +319,7 @@ int QEye::stopCapturing() {
 }
 
 int QEye::startRecording() {
+	storage->writeHeader(height, width, colorMode, bytesPerFrame);
 	recording = 1;
 	return 0;
 }

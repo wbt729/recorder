@@ -29,14 +29,14 @@ private:
 	QSpinBox *hpSpinBox;
 	QSpinBox *lpSpinBox;
 	QThread *samplerThread;
-	QProgressDialog *progressDialog;
+	//QProgressDialog *progressDialog;
 	QEye *cam;
 	MeanPlot *plot;
 	Sampler *sampler;
 	ImageLabel *imageLabel;
 	QPushButton *recordButton;
 	QPushButton *stopButton;
-	QPushButton *convertButton;
+	//QPushButton *convertButton;
 	int errors;
 	TiffConverter *conv;
 	bool record; //start triggered recording at startup
@@ -47,8 +47,8 @@ private slots:
 	void doThings();
 	void onLabelMouseWheel(int);
 	void onCountersChanged(int, int, int);
-	void onConvertButtonClicked();
-	void onConvertingBlock(int, int);
+	//void onConvertButtonClicked();
+	//void onConvertingBlock(int, int);
 	void onRecordButton(bool);
 protected:
 	virtual void closeEvent(QCloseEvent *);

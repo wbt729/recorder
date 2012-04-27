@@ -62,6 +62,7 @@ private:
 	int numImagesReceived;
 	int numImagesRecorded;
 	int numErrors;
+	int colorMode;
 	//QVector<int> timestamps;
 	ULongLongVector timestamps;
 

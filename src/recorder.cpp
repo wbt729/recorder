@@ -26,7 +26,7 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	camThread = new QThread();
 	cam->moveToThread(camThread);
 	camThread->start();
-	progressDialog = new QProgressDialog(this);
+	//progressDialog = new QProgressDialog(this);
 	conv = new TiffConverter(this);
 	imageLabel = new ImageLabel(this);
 	imageLabel->setText(tr("bla"));
@@ -42,12 +42,12 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 
 	recordButton = new QPushButton("record");
 	recordButton->setCheckable(true);
-	convertButton = new QPushButton("convert");
+	//convertButton = new QPushButton("convert");
 	layout->addWidget(recordButton,1,0);
-	layout->addWidget(convertButton,2,0);	
+	//layout->addWidget(convertButton,2,0);	
 	
 	connect(recordButton, SIGNAL(toggled(bool)), this, SLOT(onRecordButton(bool)));
-	connect(convertButton, SIGNAL(clicked()), this, SLOT(onConvertButtonClicked()));
+	//connect(convertButton, SIGNAL(clicked()), this, SLOT(onConvertButtonClicked()));
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
 	//connect(cam, SIGNAL(newQImage(QImage *)), this, SLOT(onNewImage()));
@@ -128,17 +128,17 @@ void Recorder::onCountersChanged(int received, int recorded, int errors) {
 	statusBar()->showMessage(tr("Images Received: %1, Errors: %2, Images Recorded: %3").arg(received).arg(recorded).arg(errors));
 }
 
-void Recorder::onConvertButtonClicked() {
-	connect(cam, SIGNAL(convertingBlock(int, int)), this, SLOT(onConvertingBlock(int, int)));
-	progressDialog->setCancelButton(0);
-	progressDialog->setModal(true);
-	progressDialog->show();
-	cam->convertBlock();
-}
+//void Recorder::onConvertButtonClicked() {
+//	connect(cam, SIGNAL(convertingBlock(int, int)), this, SLOT(onConvertingBlock(int, int)));
+//	progressDialog->setCancelButton(0);
+//	progressDialog->setModal(true);
+//	progressDialog->show();
+//	cam->convertBlock();
+//}
 
-void Recorder::onConvertingBlock(int recent, int total) {
-	progressDialog->setMaximum(total);
-	progressDialog->setValue(recent);
-	if(recent == total)
-		progressDialog->close();
-}
+//void Recorder::onConvertingBlock(int recent, int total) {
+//	progressDialog->setMaximum(total);
+//	progressDialog->setValue(recent);
+//	if(recent == total)
+//		progressDialog->close();
+//}
