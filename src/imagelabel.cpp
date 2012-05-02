@@ -12,9 +12,7 @@ ImageLabel::~ImageLabel() {
 }
 
 void ImageLabel::setImage(QImage *img) {
-	//qDebug() << "ImageLabel: set image";
 	scalingFactor = (double) width()/img->size().width();
-	//qDebug() << width() << img->size().width() << scalingFactor;
 	pixmap.convertFromImage(*img);
 	pixmap = pixmap.scaledToWidth(width());
 	setPixmap(pixmap);
@@ -27,10 +25,7 @@ void ImageLabel::wheelEvent(QWheelEvent *event) {
 }
 
 void ImageLabel::mousePressEvent(QMouseEvent *event) {
-	//qDebug() << (int) event->pos().x();
     origin = event->pos();
-    //if (!rubberBand)
-    //    rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
     rubberBand->setGeometry(QRect(origin, QSize()));
     rubberBand->show();
 }
@@ -50,10 +45,4 @@ void ImageLabel::mouseReleaseEvent(QMouseEvent *event)
 	scaledRoi.setHeight(roi.height()/scalingFactor);
 
 	emit newRoi(scaledRoi);
-	//qDebug() << scaledRoi.topLeft().x() << scaledRoi.topLeft().y();
-	//qDebug() << scaledRoi.bottomRight().x() << scaledRoi.bottomRight().y();
-
-    //rubberBand->hide();
-    // determine selection, for example using QRect::intersects()
-    // and QRect::contains().
 }
