@@ -41,7 +41,7 @@ QEye::~QEye() {
 }
 
 int QEye::convertBlock() {
-	converter->blockToTIFFs();
+	//converter->blockToTIFFs();
 	return 0;
 }
 

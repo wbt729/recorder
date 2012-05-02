@@ -74,6 +74,7 @@ QVector<unsigned short> Converter::readSamples(unsigned char *rawData) {
 	int offset = 0;
 
 	if(bitsPerChannel == 10 && channels == 3) {
+
 		for(int i=0; i<height; i++) {
 			for(int j=0; j<width; j++) {
 				r = 0; g = 0; b = 0;
@@ -123,108 +124,6 @@ void Converter::setResolution(int w, int h, int c, int bps, int bpp) {
 	channels = c;
 	bitsPerChannel = bps;
 	bytesPerPixel = bpp;
-}
-
-
-void Converter::blockToTIFFs() {
-	qDebug() << "Converter: converting binary dump to TIFFs";
-	QFile file("d:\\work\\dump");
-	if(!file.open(QIODevice::ReadOnly)) {
-		qDebug() << "Converter: cannot open file";
-		return;
-	}
-	qDebug() << height;
-
-	qDebug() << "Converter: there are" << file.size()/(width*height*bytesPerPixel) << "images to be decoded";
-
-	unsigned char *rawData = new unsigned char[width*height*bytesPerPixel];
-	QDataStream in(&file);
-
-	//iterate through data dump
-	int bytesPerFrame = width*height*bytesPerPixel;
-	for(int l = 0; l < file.size()/(width*height*bytesPerPixel); l++) {
-		qDebug() << "converting image" << l+1 << "of" << file.size()/(width*height*bytesPerPixel);
-		emit convertingBlock(l+1, file.size()/(width*height*bytesPerPixel));
-
-		in.readRawData((char*) rawData, width*height*bytesPerPixel);
-		QVector<unsigned short> samples = readSamples(rawData);
-
-		QString filenameTIFF = QString(tr("d:\\work\\img\\%1.tiff").arg(l+1));
-		TIFF *out=TIFFOpen(filenameTIFF.toLatin1(),"w");
-
-		TIFFSetField(out, TIFFTAG_IMAGEWIDTH, width);
-		TIFFSetField(out, TIFFTAG_IMAGELENGTH, height);
-		TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, channels);
-		TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, bitsPerChannel);
-		TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-		TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
-
-		tsize_t linebytes = TIFFScanlineSize(out);
-		unsigned char *buf=NULL;
-		buf=(unsigned char*)_TIFFmalloc(linebytes);
-
-		TIFFSetField(out, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(out, width*channels));
-		
-		char *newLine = new char[linebytes+10];
-		for(int row=0; row<height; row++) {
-
-			uchar buf[5];
-			uchar sBuf[2];
-			unsigned short s;
-			int linePos = 0;
-			for(int i=0; i<channels*width; i+=4) {
-				//qDebug() << i;
-				memset(&buf, 0, 5);
-				for(int j=0; j<4; j++) {
-					s = samples[row*width*channels+i+j];
-					switch(j) {
-						case 0:
-							s = s << 6;
-							sBuf[0] = (char) (s >> 8);
-							sBuf[1] = (char) s;
-							buf[0] = buf[0] | sBuf[0];
-							buf[1] = buf[1] | sBuf[1];
-							break;
-						case 1:
-							s = s << 4;
-							sBuf[0] = (char) (s >> 8);
-							sBuf[1] = (char) s;
-							buf[1] = buf[1] | sBuf[0];
-							buf[2] = buf[2] | sBuf[1];
-							break;
-						case 2:
-							s = s << 2;
-							sBuf[0] = (char) (s >> 8);
-							sBuf[1] = (char) s;
-							buf[2] = buf[2] | sBuf[0];
-							buf[3] = buf[3] | sBuf[1];
-							break;
-						case 3:
-							sBuf[0] = (char) (s >> 8);
-							sBuf[1] = (char) s;
-							buf[3] = buf[3] | sBuf[0];
-							buf[4] = buf[4] | sBuf[1];
-							break;
-					}
-				}
-				for(int k=0; k<5; k++) {
-					newLine[linePos+k] = buf[k];
-				}
-				linePos += 5;
-			}
-			//memcpy(buf, newLine, linebytes);
-			//qDebug() << "writing row" << row;
-			//if(TIFFWriteScanline(out, buf, row, 0)<0) {
-			if(TIFFWriteScanline(out, newLine, row, 0)<0) {
-				qDebug() << "something went wrong during writing the tiff";
-			return;
-			}
-
-		}
-		TIFFClose(out);
-	}
-	qDebug() << "Converter: done converting";
-	file.close();
 }
 
 void Converter::onTimer() {

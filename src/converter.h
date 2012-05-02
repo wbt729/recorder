@@ -43,7 +43,7 @@ public:
 public slots:
 	void makePreview(char *);
 	//void charToCvMat(char *);
-	void blockToTIFFs();
+	//void blockToTIFFs();
 
 signals:
 	void newImage(QImage*);
