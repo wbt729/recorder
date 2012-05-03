@@ -34,10 +34,7 @@ void Storage::saveBuffer(char *buf, int bytesPerFrame, int numberOfFrames, ULong
 
 		for(int i=0; i<numberOfFrames; i++) {
 			unsigned long long timestamp = timestamps.at(i);
-			//qDebug() << "write timestamp";
 			file.write((const char*) &timestamp, sizeof(unsigned long long));
-			//qDebug() << "write data" << file.write(buf+i*bytesPerFrame+(i+1)*sizeof(unsigned long long), bytesPerFrame);	//this can't be right
-			//qDebug() << "write data";
 			file.write(buf+i*bytesPerFrame, bytesPerFrame);	//this can't be right
 		}
 		

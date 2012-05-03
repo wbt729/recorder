@@ -4,7 +4,6 @@
 #ifndef QEYE_H
 #define QEYE_H
 
-//#include "opencv2/opencv.hpp"
 #include <QObject>
 #include <QDebug>
 #include <QImage>
@@ -16,9 +15,7 @@
 #include <qtimer.h>
 #include <converter.h>
 
-typedef QVector<unsigned long long> ULongLongVector;
-
-
+typedef QVector<unsigned long long> ULongLongVector;	//register type for signal/slot transportation
 
 class QEye : public QObject {
 	Q_OBJECT
@@ -63,7 +60,6 @@ private:
 	int numImagesRecorded;
 	int numErrors;
 	int colorMode;
-	//QVector<int> timestamps;
 	ULongLongVector timestamps;
 
 	int maxConversionRate;

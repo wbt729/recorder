@@ -30,12 +30,12 @@ MeanPlotWidget::~MeanPlotWidget() {
 }
 
 void MeanPlotWidget::newMat(cv::Mat *mat) {
-	qDebug() << "MeanPlotWidget: new mat";
+	//qDebug() << "MeanPlotWidget: new mat";
 	sampler->setMat(mat);
 }
 
 void MeanPlotWidget::newRoi(QRect roi) {
-	qDebug() << "MeanPlotWidget: new roi";
+	//qDebug() << "MeanPlotWidget: new roi";
 	sampler->setRoi(roi);
 }
 

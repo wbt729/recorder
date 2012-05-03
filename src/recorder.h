@@ -45,6 +45,7 @@ private:
 	QMenu *viewMenu;
 	QAction *showPlot;
 	void createMenus();
+	void makeConnections();
 private slots:
 	void doThings();
 	void onLabelMouseWheel(int);

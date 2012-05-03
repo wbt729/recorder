@@ -27,18 +27,22 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	triggerButton->setCheckable(true);
 	layout->addWidget(triggerButton);
 	
-	connect(recordButton, SIGNAL(toggled(bool)), this, SLOT(onRecordButton(bool)));
-	connect(triggerButton, SIGNAL(toggled(bool)), cam, SLOT(setExternalTrigger(bool)));
-	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
-	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
-	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
-	connect(cam, SIGNAL(transferCountersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
-	connect(plotWidget, SIGNAL(closing()), this, SLOT(onPlotWidgetClosing()));
-
 	createMenus();
+	makeConnections();
 	errors = 0;
 
 	QTimer::singleShot(.1, this, SLOT(doThings()));
+}
+
+void Recorder::makeConnections() {
+	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
+	//connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
+	connect(cam, SIGNAL(transferCountersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
+	connect(recordButton, SIGNAL(toggled(bool)), this, SLOT(onRecordButton(bool)));
+	connect(triggerButton, SIGNAL(toggled(bool)), cam, SLOT(setExternalTrigger(bool)));
+	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
+	connect(plotWidget, SIGNAL(closing()), this, SLOT(onPlotWidgetClosing()));
+	connect(showPlot, SIGNAL(triggered()), this, SLOT(onShowPlot()));
 }
 
 void Recorder::createMenus() {
@@ -48,7 +52,7 @@ void Recorder::createMenus() {
 	setMenuBar(new QMenuBar());
 	viewMenu = menuBar()->addMenu(tr("&View"));
 	viewMenu->addAction(showPlot);
-	connect(showPlot, SIGNAL(triggered()), this, SLOT(onShowPlot()));
+
 }
 
 void Recorder::onShowPlot() {
