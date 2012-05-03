@@ -1,11 +1,7 @@
 #include "storage.h"
 
 Storage::Storage(QObject *parent) {
-	QString path = "d:\\work\\";
-	QString filename = QDateTime::currentDateTime().toString("yyyyMMddhhmmss");
-	QString extension = ".msr";
-	file.setFileName(path + filename + extension);
-	
+
 }
 
 Storage::~Storage() {
@@ -13,6 +9,11 @@ Storage::~Storage() {
 }
 
 void Storage::writeHeader(int height, int width, int colorMode, int bytesPerFrame) {
+	QString path = "d:\\work\\";
+	QString filename = QDateTime::currentDateTime().toString("yyyyMMddhhmmss");
+	QString extension = ".msr";
+	file.setFileName(path + filename + extension);
+
 	qDebug() << "open file" << file.open(QIODevice::WriteOnly | QIODevice::Append);
 	if(file.isOpen()) {
 		file.write((const char*) &colorMode, sizeof(int));
