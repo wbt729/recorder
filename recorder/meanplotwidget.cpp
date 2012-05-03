@@ -21,8 +21,8 @@ MeanPlotWidget::MeanPlotWidget(QWidget *parent) {
 	layout()->addWidget(lpSpinBox);
 	setMinimumSize(800, 600);
 	connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
-	connect(hpSpinBox, SIGNAL(valueChanged(int), sampler), SLOT(setHP(int)));
-	connect(lpSpinBox, SIGNAL(valueChanged(int), sampler), SLOT(setLP(int)));
+	connect(hpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setHP(int)));
+	connect(lpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setLP(int)));
 }
 
 MeanPlotWidget::~MeanPlotWidget() {

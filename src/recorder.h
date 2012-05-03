@@ -31,13 +31,11 @@ private:
 	QThread *samplerThread;
 	//QProgressDialog *progressDialog;
 	QEye *cam;
-	//MeanPlot *plot;
 	MeanPlotWidget *plotWidget;
 	Sampler *sampler;
 	ImageLabel *imageLabel;
 	QPushButton *recordButton;
 	QPushButton *stopButton;
-	//QPushButton *convertButton;
 	int errors;
 	TiffConverter *conv;
 	bool record; //start triggered recording at startup
@@ -51,8 +49,6 @@ private slots:
 	void doThings();
 	void onLabelMouseWheel(int);
 	void onCountersChanged(int, int, int);
-	//void onConvertButtonClicked();
-	//void onConvertingBlock(int, int);
 	void onRecordButton(bool);
 	void onShowPlot();
 protected:
