@@ -22,6 +22,7 @@ private:
 public slots:
 	void saveBuffer(char *, int, int, ULongLongVector);
 	void writeHeader(int, int, int, int);
+	void finalize();
 };
 
 #endif // STORAGE_H

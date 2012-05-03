@@ -293,8 +293,18 @@ int QEye::setExposure(double exp) {
 
 //choose trigger mode between hard- and software trigger
 int QEye::setExternalTrigger(bool external) {
-	if(external) return (int) is_SetExternalTrigger(cam, IS_SET_TRIGGER_LO_HI);
-	else return (int) is_SetExternalTrigger(cam, IS_SET_TRIGGER_SOFTWARE);
+	int ret = -1;
+	if(external) {
+		ret = is_SetExternalTrigger(cam, IS_SET_TRIGGER_LO_HI);
+		startCapturing();
+		return ret;
+	}
+	else {
+		ret = is_SetExternalTrigger(cam, IS_SET_TRIGGER_SOFTWARE);
+		startCapturing();
+		//is_ForceTrigger(cam);
+		return ret;
+	}
 }
 
 
@@ -319,6 +329,7 @@ int QEye::stopCapturing() {
 }
 
 int QEye::startRecording() {
+	numImagesRecorded = 0;
 	storage->writeHeader(height, width, colorMode, bytesPerFrame);
 	recording = 1;
 	return 0;
@@ -326,6 +337,7 @@ int QEye::startRecording() {
 
 int QEye::stopRecording() {
 	recording = 0;
+	storage->finalize();
 	return 0;
 }
 

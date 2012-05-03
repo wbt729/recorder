@@ -46,3 +46,7 @@ void Storage::saveBuffer(char *buf, int bytesPerFrame, int numberOfFrames, ULong
 	else
 		qDebug() << "storage: cant write, file not open";
 }
+
+void Storage::finalize() {
+	file.close();
+}

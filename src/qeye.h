@@ -30,8 +30,8 @@ public:
 	int exit();
 	int setExposure(double);
 	double getExposure();
-	void enableQImageConversion(bool enable = true);		//not yet implemented
-	void enableCVMatConversion(bool enable = true);
+	//void enableQImageConversion(bool enable = true);		//not yet implemented
+	//void enableCVMatConversion(bool enable = true);
 	int setColorMode();
 	int getColorMode();
 	static int countFreeCams();
