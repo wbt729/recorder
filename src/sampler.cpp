@@ -5,8 +5,8 @@ Sampler::Sampler() {
 	roi = QRect();
 	roiArea = 1000000;
 	data = QVector<double>(bufferSize, 0);
-	lengthHighPass = 0;
-	lengthLowPass = 0;
+	lengthHighPass = 30;
+	lengthLowPass = 3;
 }
 
 Sampler::~Sampler() {

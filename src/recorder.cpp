@@ -8,19 +8,21 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	QGridLayout *layout = new QGridLayout();
 	centralWidget->setLayout(layout);
 	setCentralWidget(centralWidget);
-	setMinimumSize(1000, 600);
+	//setMinimumSize(1000, 600);
 
-	if(!noPlot) {
-		hpSpinBox = new QSpinBox();
-		lpSpinBox = new QSpinBox();
-		hpSpinBox->setRange(0, 100);
-		lpSpinBox->setRange(0, 100);
-		plot = new MeanPlot();
-		sampler = new Sampler();
-		samplerThread = new QThread();
-		sampler->moveToThread(samplerThread);
-		samplerThread->start();
-	}
+	//if(!noPlot) {
+	//	hpSpinBox = new QSpinBox();
+	//	lpSpinBox = new QSpinBox();
+	//	hpSpinBox->setRange(0, 100);
+	//	lpSpinBox->setRange(0, 100);
+	//	plot = new MeanPlot();
+	//	sampler = new Sampler();
+	//	samplerThread = new QThread();
+	//	sampler->moveToThread(samplerThread);
+	//	samplerThread->start();
+	//}
+	plotWidget = new MeanPlotWidget(this);
+	//plotWidget->show();
 		
 	cam = new QEye();
 	camThread = new QThread();
@@ -32,13 +34,13 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	imageLabel->setText(tr("bla"));
 	layout->addWidget(imageLabel,0,0);
 
-	if(!noPlot) {
-		layout->addWidget(plot,0,1,1,2);
-		layout->addWidget(new QLabel("LP"),1,1);
-		layout->addWidget(new QLabel("HP"),1,2);
-		layout->addWidget(lpSpinBox, 2,1);
-		layout->addWidget(hpSpinBox, 2,2);
-	}
+	//if(!noPlot) {
+	//	layout->addWidget(plot,0,1,1,2);
+	//	layout->addWidget(new QLabel("LP"),1,1);
+	//	layout->addWidget(new QLabel("HP"),1,2);
+	//	layout->addWidget(lpSpinBox, 2,1);
+	//	layout->addWidget(hpSpinBox, 2,2);
+	//}
 
 	recordButton = new QPushButton("record");
 	recordButton->setCheckable(true);
@@ -54,18 +56,43 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	connect(cam, SIGNAL(transferCountersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
 
-	if(!noPlot) {
-		connect(lpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setLP(int)));
-		connect(hpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setHP(int)));
-		connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
-		connect(cam, SIGNAL(newMat(cv::Mat *)), sampler, SLOT(setMat(cv::Mat *)));
-		connect(imageLabel, SIGNAL(newRoi(QRect)), sampler, SLOT(setRoi(QRect)));
-		//cam->makeCvMat(true);
-	}
+	//if(!noPlot) {
+	//	connect(lpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setLP(int)));
+	//	connect(hpSpinBox, SIGNAL(valueChanged(int)), sampler, SLOT(setHP(int)));
+	//	connect(sampler, SIGNAL(newSamples(double, double, double)), plot, SLOT(updateData(double, double, double)));
+	//	connect(cam, SIGNAL(newMat(cv::Mat *)), sampler, SLOT(setMat(cv::Mat *)));
+	//	connect(imageLabel, SIGNAL(newRoi(QRect)), sampler, SLOT(setRoi(QRect)));
+	//	//cam->makeCvMat(true);
+	//}
 
+
+	createMenus();
 	errors = 0;
 
 	QTimer::singleShot(.1, this, SLOT(doThings()));
+}
+
+void Recorder::createMenus() {
+	showPlot = new QAction(tr("Show Plot"), this);
+	showPlot->setCheckable(true);
+	showPlot->setChecked(false);
+	setMenuBar(new QMenuBar());
+	viewMenu = menuBar()->addMenu(tr("&View"));
+	viewMenu->addAction(showPlot);
+	connect(showPlot, SIGNAL(triggered()), this, SLOT(onShowPlot()));
+}
+
+void Recorder::onShowPlot() {
+	if(showPlot->isChecked()) {
+		plotWidget->show();
+		connect(cam, SIGNAL(newMat(cv::Mat *)), plotWidget, SLOT(newMat(cv::Mat *)));
+		connect(imageLabel, SIGNAL(newRoi(QRect)), plotWidget, SLOT(newRoi(QRect)));
+	}
+	else {
+		plotWidget->hide();
+		disconnect(cam, SIGNAL(newMat(cv::Mat *)), plotWidget, SLOT(newMat(cv::Mat *)));
+		
+	}
 }
 
 Recorder::~Recorder() {
@@ -115,6 +142,7 @@ void Recorder::closeEvent(QCloseEvent *event) {
 	blockSignals(true);
 	statusBar()->showMessage("Shutting down");
 	cam->exit();
+	plotWidget->close();
 	qDebug("recorder: this is the end");
 }
 

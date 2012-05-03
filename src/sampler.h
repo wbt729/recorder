@@ -1,3 +1,5 @@
+//cv::Mat goes in, samples come out
+
 #ifndef SAMPLER_H
 #define SAMPLER_H
 

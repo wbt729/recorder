@@ -13,9 +13,10 @@
 #include <QErrorMessage>
 #include <qprogressdialog.h>
 #include <QMessageBox>
-#include "meanplot.h"
-#include "sampler.h"
+#include "meanplotwidget.h"
+//#include "sampler.h"
 #include <qspinbox.h>
+#include <qmenubar.h>
 
 class Recorder : public QMainWindow
 {
@@ -26,12 +27,12 @@ public:
 	~Recorder();
 private:
 	QThread *camThread;
-	QSpinBox *hpSpinBox;
-	QSpinBox *lpSpinBox;
+
 	QThread *samplerThread;
 	//QProgressDialog *progressDialog;
 	QEye *cam;
-	MeanPlot *plot;
+	//MeanPlot *plot;
+	MeanPlotWidget *plotWidget;
 	Sampler *sampler;
 	ImageLabel *imageLabel;
 	QPushButton *recordButton;
@@ -43,6 +44,9 @@ private:
 	bool trigger; //use external trigger
 	bool noPlot;
 	virtual QSize sizeHint();
+	QMenu *viewMenu;
+	QAction *showPlot;
+	void createMenus();
 private slots:
 	void doThings();
 	void onLabelMouseWheel(int);
@@ -50,6 +54,7 @@ private slots:
 	//void onConvertButtonClicked();
 	//void onConvertingBlock(int, int);
 	void onRecordButton(bool);
+	void onShowPlot();
 protected:
 	virtual void closeEvent(QCloseEvent *);
 };
