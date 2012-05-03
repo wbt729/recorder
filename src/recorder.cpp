@@ -19,16 +19,21 @@ Recorder::Recorder(bool t, bool r, bool n, QWidget *parent, Qt::WFlags flags) {
 	imageLabel->setText(tr("bla"));
 	layout->addWidget(imageLabel,0,0);
 
-	recordButton = new QPushButton("record");
+	recordButton = new QPushButton("Record");
 	recordButton->setCheckable(true);
-	layout->addWidget(recordButton,1,0);
+	layout->addWidget(recordButton);
+
+	triggerButton = new QPushButton("External Trigger");
+	triggerButton->setCheckable(true);
+	layout->addWidget(triggerButton);
 	
 	connect(recordButton, SIGNAL(toggled(bool)), this, SLOT(onRecordButton(bool)));
+	connect(triggerButton, SIGNAL(toggled(bool)), cam, SLOT(setExternalTrigger(bool)));
 	connect(cam, SIGNAL(newImage(QImage *)), imageLabel, SLOT(setImage(QImage *)));
 	connect(imageLabel, SIGNAL(mouseWheelSteps(int)), this, SLOT(onLabelMouseWheel(int)));
 	connect(cam, SIGNAL(errors(int)), this, SLOT(onError(int)));
 	connect(cam, SIGNAL(transferCountersChanged(int, int, int)), this, SLOT(onCountersChanged(int, int, int)));
-
+	connect(plotWidget, SIGNAL(closing()), this, SLOT(onPlotWidgetClosing()));
 
 	createMenus();
 	errors = 0;
@@ -81,7 +86,6 @@ void Recorder::doThings() {
 		noCamMsgBox.setText(tr("There are %1 uEye cameras on this network. No free camera could be found. Check if the camera is already opened somewhere else and check the network connections. Then restart this program.").arg(camsFound));
 		noCamMsgBox.exec();
 		recordButton->setDisabled(true);
-		//close();
 		return;
 	}
 	else {
@@ -115,4 +119,9 @@ void Recorder::onLabelMouseWheel(int steps) {
 
 void Recorder::onCountersChanged(int received, int recorded, int errors) {
 	statusBar()->showMessage(tr("Images Received: %1, Errors: %2, Images Recorded: %3").arg(received).arg(recorded).arg(errors));
+}
+
+void Recorder::onPlotWidgetClosing() {
+	showPlot->setChecked(false);
+	disconnect(cam, SIGNAL(newMat(cv::Mat *)), plotWidget, SLOT(newMat(cv::Mat *)));
 }

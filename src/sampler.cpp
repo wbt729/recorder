@@ -68,7 +68,6 @@ void Sampler::setRoi(QRect r) {
 	roi = r;
 	qDebug() << roi.topLeft().x() << roi.topLeft().y();
 	qDebug() << roi.bottomRight().x() << roi.bottomRight().y();
-	//qDebug() << roiArea;
 	qDebug() << "new ROI";
 }
 

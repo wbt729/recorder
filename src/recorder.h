@@ -35,7 +35,7 @@ private:
 	Sampler *sampler;
 	ImageLabel *imageLabel;
 	QPushButton *recordButton;
-	QPushButton *stopButton;
+	QPushButton *triggerButton;
 	int errors;
 	TiffConverter *conv;
 	bool record; //start triggered recording at startup
@@ -51,6 +51,7 @@ private slots:
 	void onCountersChanged(int, int, int);
 	void onRecordButton(bool);
 	void onShowPlot();
+	void onPlotWidgetClosing();
 protected:
 	virtual void closeEvent(QCloseEvent *);
 };

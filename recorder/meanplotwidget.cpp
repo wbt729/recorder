@@ -38,3 +38,7 @@ void MeanPlotWidget::newRoi(QRect roi) {
 	qDebug() << "MeanPlotWidget: new roi";
 	sampler->setRoi(roi);
 }
+
+void MeanPlotWidget::closeEvent(QCloseEvent *event) {
+	emit closing();
+}

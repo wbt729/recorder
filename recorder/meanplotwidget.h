@@ -25,7 +25,10 @@ private:
 public slots:
 	void newMat(cv::Mat *);
 	void newRoi(QRect);
-
+protected:
+	virtual void closeEvent(QCloseEvent *);
+signals:
+	void closing();
 };
 
 #endif // MEANPLOTWIDGET_H
